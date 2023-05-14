@@ -13,7 +13,6 @@ import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-assoc
 import { Eip } from '@cdktf/provider-aws/lib/eip';
 import { Route53Record } from '@cdktf/provider-aws/lib/route53-record';
 import { Route53Zone } from '@cdktf/provider-aws/lib/route53-zone';
-import { Eks } from './.gen/modules/terraform-aws-modules/eks';
 
 class MyStack extends TerraformStack {
   public instance: Instance;
