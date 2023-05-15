@@ -1,0 +1,8 @@
+# Default values for mychart.
+backend:
+  replicas: 1
+  image: fdervisi/backend
+frontend:
+  replicas: 1
+  image: fdervisi/frontend
+mongodb_uri: mongodb://admin:admin@mongodb.fdervisi.io:27017/TodoApp

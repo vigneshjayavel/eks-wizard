@@ -38,6 +38,9 @@ import {
   service,
 } from '@cdktf/provider-kubernetes/';
 import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
+import { HelmProvider } from '@cdktf/provider-helm/lib/provider';
+import { Release, ReleaseConfig } from '@cdktf/provider-helm/lib/release';
+// import {  } from '@cdktf/provider-helm/lib/provider';
 
 class MyStack extends TerraformStack {
   public eks: dataAwsEksCluster.DataAwsEksCluster;
@@ -347,7 +350,6 @@ class MyStack extends TerraformStack {
       policyArn: 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore',
     });
 
-
     // Create an EKS node group
     new EksNodeGroup(this, 'NodeGroup', {
       clusterName: cluster.name,
@@ -467,6 +469,14 @@ class KubernetesApplicationStack extends TerraformStack {
         type: 'NodePort',
       },
     });
+
+    new HelmProvider(this, 'helm-provider', {});
+
+    new Release(this, 'helm-release', );
+
+    
+
+    //new HelmChart(this, 'helm-chart', {
   }
 }
 
