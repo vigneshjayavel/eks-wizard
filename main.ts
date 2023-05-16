@@ -31,15 +31,13 @@ import { InternetGateway } from '@cdktf/provider-aws/lib/internet-gateway';
 import { NatGateway } from '@cdktf/provider-aws/lib/nat-gateway';
 import { Fn } from 'cdktf';
 import { IamRolePolicyAttachment } from '@cdktf/provider-aws/lib/iam-role-policy-attachment';
-import { Namespace } from '@cdktf/provider-kubernetes/lib/namespace';
+// import { Namespace } from '@cdktf/provider-kubernetes/lib/namespace';
 import {
-  deployment,
+  // deployment,
   provider as k8s,
-  service,
+  //service,
 } from '@cdktf/provider-kubernetes/';
 import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
-import { HelmProvider } from '@cdktf/provider-helm/lib/provider';
-import { Release, ReleaseConfig } from '@cdktf/provider-helm/lib/release';
 // import {  } from '@cdktf/provider-helm/lib/provider';
 
 class MyStack extends TerraformStack {
@@ -406,77 +404,71 @@ class KubernetesApplicationStack extends TerraformStack {
       token: clusterAuth.token,
     });
 
-    const exampleNamespace = new Namespace(this, 'tf-cdk-example', {
-      metadata: {
-        name: 'tf-cdk-example',
-      },
-    });
+    // const exampleNamespace = new Namespace(this, 'tf-cdk-example', {
+    //   metadata: {
+    //     name: 'tf-cdk-example',
+    //   },
+    // });
 
-    const app = 'nginx-example';
-    const nginx = new deployment.Deployment(this, 'nginx-deployment', {
-      metadata: {
-        name: app,
-        namespace: exampleNamespace.metadata.name,
-        labels: {
-          app,
-        },
-      },
-      spec: {
-        replicas: '1',
-        selector: {
-          matchLabels: {
-            app,
-          },
-        },
-        template: {
-          metadata: {
-            labels: {
-              app,
-            },
-          },
-          spec: {
-            container: [
-              {
-                image: 'nginx:1.7.8',
-                name: 'example',
-                port: [
-                  {
-                    containerPort: 80,
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      },
-    });
+    // const app = 'nginx-example';
+    // const nginx = new deployment.Deployment(this, 'nginx-deployment', {
+    //   metadata: {
+    //     name: app,
+    //     namespace: exampleNamespace.metadata.name,
+    //     labels: {
+    //       app,
+    //     },
+    //   },
+    //   spec: {
+    //     replicas: '1',
+    //     selector: {
+    //       matchLabels: {
+    //         app,
+    //       },
+    //     },
+    //     template: {
+    //       metadata: {
+    //         labels: {
+    //           app,
+    //         },
+    //       },
+    //       spec: {
+    //         container: [
+    //           {
+    //             image: 'nginx:1.7.8',
+    //             name: 'example',
+    //             port: [
+    //               {
+    //                 containerPort: 80,
+    //               },
+    //             ],
+    //           },
+    //         ],
+    //       },
+    //     },
+    //   },
+    // });
 
-    new service.Service(this, 'nginx-service', {
-      metadata: {
-        namespace: nginx.metadata.namespace,
-        name: 'nginx-service',
-      },
-      spec: {
-        selector: {
-          app,
-        },
-        port: [
-          {
-            port: 80,
-            targetPort: '80',
-          },
-        ],
-        type: 'NodePort',
-      },
-    });
+    // new service.Service(this, 'nginx-service', {
+    //   metadata: {
+    //     namespace: nginx.metadata.namespace,
+    //     name: 'nginx-service',
+    //   },
+    //   spec: {
+    //     selector: {
+    //       app,
+    //     },
+    //     port: [
+    //       {
+    //         port: 80,
+    //         targetPort: '80',
+    //       },
+    //     ],
+    //     type: 'NodePort',
+    //   },
+    // });
 
-    new HelmProvider(this, 'helm-provider', {});
 
-    new Release(this, 'helm-release', );
-
-    
-
-    //new HelmChart(this, 'helm-chart', {
   }
 }
 
