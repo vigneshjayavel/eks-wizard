@@ -10,7 +10,6 @@ import { AwsProvider } from '@cdktf/provider-aws/lib/provider';
 import * as fs from 'fs';
 import { Vpc } from '@cdktf/provider-aws/lib/vpc';
 import { Subnet } from '@cdktf/provider-aws/lib/subnet';
-//import { InternetGateway } from '@cdktf/provider-aws/lib/internet-gateway';
 import { RouteTable } from '@cdktf/provider-aws/lib/route-table';
 import { Route } from '@cdktf/provider-aws/lib/route';
 import { Instance } from '@cdktf/provider-aws/lib/instance';
@@ -31,7 +30,6 @@ import { InternetGateway } from '@cdktf/provider-aws/lib/internet-gateway';
 import { NatGateway } from '@cdktf/provider-aws/lib/nat-gateway';
 import { Fn } from 'cdktf';
 import { IamRolePolicyAttachment } from '@cdktf/provider-aws/lib/iam-role-policy-attachment';
-// import { Namespace } from '@cdktf/provider-kubernetes/lib/namespace';
 import {
   deployment,
   provider as k8s,
@@ -39,7 +37,6 @@ import {
   secret,
 } from '@cdktf/provider-kubernetes/';
 import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
-// import {  } from '@cdktf/provider-helm/lib/provider';
 
 class EksStack extends TerraformStack {
   public eks: dataAwsEksCluster.DataAwsEksCluster;
@@ -64,7 +61,9 @@ class EksStack extends TerraformStack {
         {}
       ).names;
 
-    this.vpc = new Vpc(this, 'vpc', {
+
+    
+    this.vpc = new Vpc(this, 'vpc-eks-app', {
       cidrBlock: '10.0.0.0/20',
       enableDnsHostnames: true,
       tags: { Name: 'vpc-eks-app', Owner: 'fdervisi' },
@@ -119,18 +118,39 @@ class EksStack extends TerraformStack {
 
     this.igw = new InternetGateway(this, 'igw', {
       vpcId: this.vpc.id,
+      tags: {
+        Name: 'igw-eks-app',
+        Owner: 'fdervisi',
+      },
     });
 
-    const eipForNat = new Eip(this, 'EipForNat', {});
+    const eipForNat = new Eip(this, 'EipForNat', {
+      tags: {
+        Name: 'eip-for-nat-eks-app',
+        Owner: 'fdervisi',
+      },
+    });
 
     this.natGw = new NatGateway(this, 'natGw', {
       allocationId: eipForNat.id,
       subnetId: this.subnetEksPublic.id,
+      tags: {
+        Name: 'natGw-eks-app',
+        Owner: 'fdervisi',
+      },
     });
 
-    const routeTablePublic = new RouteTable(this, 'route-table-public', {
-      vpcId: this.vpc.id,
-    });
+    const routeTablePublic = new RouteTable(
+      this,
+      'route-table-eks-app-public-subnet',
+      {
+        vpcId: this.vpc.id,
+        tags: {
+          Name: 'route-table-eks-app-public-subnet',
+          Owner: 'fdervisi',
+        },
+      }
+    );
 
     new RouteTableAssociation(this, 'route-table-association', {
       routeTableId: routeTablePublic.id,
@@ -143,9 +163,17 @@ class EksStack extends TerraformStack {
       destinationCidrBlock: '0.0.0.0/0',
     });
 
-    const routeTablePrivate = new RouteTable(this, 'route-table-private', {
-      vpcId: this.vpc.id,
-    });
+    const routeTablePrivate = new RouteTable(
+      this,
+      'route-table-eks-app-private',
+      {
+        vpcId: this.vpc.id,
+        tags: {
+          Name: 'route-table-eks-app-privatet',
+          Owner: 'fdervisi',
+        },
+      }
+    );
 
     new RouteTableAssociation(this, 'route-table-association-1', {
       routeTableId: routeTablePrivate.id,
@@ -175,24 +203,23 @@ class EksStack extends TerraformStack {
 
     const securityGroupMongoDb = new SecurityGroup(
       this,
-      'worker_group_mgmt_one',
+      'security-group-mongoDB',
       {
-        namePrefix: 'worker_group_mgmt_one',
+        namePrefix: 'security-group-mongoDB',
         vpcId: this.vpc.id,
-
         ingress: [
           {
             fromPort: 22,
             toPort: 22,
             protocol: 'tcp',
-
+            description: 'ssh',
             cidrBlocks: ['0.0.0.0/0'],
           },
           {
             fromPort: 27017,
             toPort: 27017,
             protocol: 'tcp',
-
+            description: 'mongoDB',
             cidrBlocks: ['0.0.0.0/0'],
           },
         ],
@@ -201,9 +228,14 @@ class EksStack extends TerraformStack {
             fromPort: 0,
             toPort: 0,
             protocol: '-1',
+            description: 'all egress',
             cidrBlocks: ['0.0.0.0/0'],
           },
         ],
+        tags: {
+          Name: 'security-group-mongoDB',
+          Owner: 'fdervisi',
+        },
       }
     );
 
@@ -225,16 +257,17 @@ class EksStack extends TerraformStack {
       tags: { Name: 'eip_MongoDB', Owner: 'fdervisi' },
     });
 
-    const privateHostedZone = new Route53Zone(this, 'Route53Zone', {
+    const privateHostedZone = new Route53Zone(this, 'route53-zone', {
       name: 'fdervisi.io',
       vpc: [
         {
           vpcId: this.vpc.id,
         },
       ],
+      tags: { Owner: 'fdervisi' },
     });
 
-    new Route53Record(this, 'Route53Record', {
+    new Route53Record(this, 'route53-record', {
       name: 'mongodb.fdervisi.io',
       type: 'A',
       zoneId: privateHostedZone.zoneId,
@@ -242,7 +275,7 @@ class EksStack extends TerraformStack {
       records: [this.eip.publicIp],
     });
 
-    const eksRole = new IamRole(this, 'EksRole', {
+    const eksRole = new IamRole(this, 'iam-eks-role', {
       assumeRolePolicy: JSON.stringify({
         Version: '2012-10-17',
         Statement: [
@@ -257,17 +290,17 @@ class EksStack extends TerraformStack {
       }),
     });
 
-    new IamRolePolicyAttachment(this, 'EksPolicyAttachment1', {
+    new IamRolePolicyAttachment(this, 'iam-eks-policy-attachment-1', {
       role: eksRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEKSClusterPolicy',
     });
 
-    new IamRolePolicyAttachment(this, 'EksPolicyAttachment2', {
+    new IamRolePolicyAttachment(this, 'iam-eks-policy-attachment-2', {
       role: eksRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEKSVPCResourceController',
     });
 
-    new IamRolePolicy(this, 'NodeGroupPolicy', {
+    new IamRolePolicy(this, 'iam-eks-node-group-policy', {
       role: eksRole.name,
       policy: JSON.stringify({
         Version: '2012-10-17',
@@ -281,7 +314,7 @@ class EksStack extends TerraformStack {
       }),
     });
 
-    new IamRolePolicy(this, 'NodeGroupPolicy2', {
+    new IamRolePolicy(this, 'iam-eks-node-group-policy-1', {
       role: eksRole.name,
       policy: JSON.stringify({
         Version: '2012-10-17',
@@ -299,7 +332,7 @@ class EksStack extends TerraformStack {
       }),
     });
 
-    const cluster = new EksCluster(this, 'Cluster', {
+    const cluster = new EksCluster(this, 'eks-cluster', {
       name: 'eks-app',
       roleArn: eksRole.arn,
       vpcConfig: {
@@ -310,9 +343,12 @@ class EksStack extends TerraformStack {
         ],
         endpointPublicAccess: true,
       },
+      tags: {
+        Owner: 'fdervisi',
+      },
     });
 
-    const nodeGroupRole = new IamRole(this, 'NodeGroupRole', {
+    const nodeGroupRole = new IamRole(this, 'iam-eks-node-group-role', {
       assumeRolePolicy: JSON.stringify({
         Version: '2012-10-17',
         Statement: [
@@ -325,29 +361,29 @@ class EksStack extends TerraformStack {
       }),
     });
 
-    new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment1', {
+    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-1', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy',
     });
 
-    new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment2', {
+    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-2', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly',
     });
 
-    new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment3', {
+    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-3', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy',
     });
 
-    new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment4', {
+    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-4', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore',
     });
 
-    new EksNodeGroup(this, 'NodeGroup', {
+    new EksNodeGroup(this, 'eks-node-group', {
       clusterName: cluster.name,
-      nodeGroupName: 'my-node-group',
+      nodeGroupName: 'eks-node-group',
       nodeRoleArn: nodeGroupRole.arn,
       instanceTypes: ['t3.small'],
       subnetIds: [
@@ -359,6 +395,9 @@ class EksStack extends TerraformStack {
         desiredSize: 3,
         maxSize: 5,
         minSize: 1,
+      },
+      tags: {
+        Owner: 'fdervisi',
       },
     });
 
