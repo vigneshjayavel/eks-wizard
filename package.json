@@ -23,8 +23,11 @@
     "@cdktf/provider-aws": "14.0.4",
     "@cdktf/provider-helm": "^6.0.0",
     "@cdktf/provider-kubernetes": "^6.0.1",
+    "ajv": "^8.12.0",
     "cdktf": "^0.16.1",
-    "constructs": "^10.2.21"
+    "constructs": "^10.2.21",
+    "typescript-json-schema": "^0.56.0",
+    "yaml": "^2.2.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.1",

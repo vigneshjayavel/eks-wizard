@@ -81,3 +81,13 @@ in ```cdktf.json``` add **terraformModules**
 }
 
 
+
+
+
+
+
+
+
+
+
+typescript-json-schema --required --noExtraProps ./lib/CloudServiceTreeInterface.ts ICloudServiceTree > cloudServiceTreeSchema.json

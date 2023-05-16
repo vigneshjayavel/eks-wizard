@@ -37,6 +37,7 @@ import {
   secret,
 } from '@cdktf/provider-kubernetes/';
 import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
+import { cloudServiceTree } from './lib/cloudServiceTreeParser';
 
 class EksStack extends TerraformStack {
   public eks: dataAwsEksCluster.DataAwsEksCluster;
@@ -53,20 +54,19 @@ class EksStack extends TerraformStack {
   private eip: Eip;
   constructor(scope: Construct, id: string) {
     super(scope, id);
-    new AwsProvider(this, 'aws', { region: 'eu-south-1' });
+
+    new AwsProvider(this, 'aws', { region: cloudServiceTree.region });
     const allAvailabilityZones =
       new dataAwsAvailabilityZones.DataAwsAvailabilityZones(
         this,
         'all-availability-zones',
         {}
       ).names;
-
-
     
     this.vpc = new Vpc(this, 'vpc-eks-app', {
-      cidrBlock: '10.0.0.0/20',
+      cidrBlock: cloudServiceTree.vpc.cidrBlock,
       enableDnsHostnames: true,
-      tags: { Name: 'vpc-eks-app', Owner: 'fdervisi' },
+      tags: { Name: cloudServiceTree.vpc.name, Owner: cloudServiceTree.userId },
     });
 
     this.subnetEksPrivate1 = new Subnet(this, 'subnet-eks-private1', {
@@ -74,7 +74,7 @@ class EksStack extends TerraformStack {
       cidrBlock: '10.0.0.0/24',
       tags: {
         Name: 'subnet-eks-private1',
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
         'kubernetes.io/cluster/eks-app': 'shared',
         'kubernetes.io/role/elb': '1',
       },
@@ -86,7 +86,7 @@ class EksStack extends TerraformStack {
       cidrBlock: '10.0.1.0/24',
       tags: {
         Name: 'subnet-eks-private2',
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
         'kubernetes.io/cluster/eks-app': 'shared',
         'kubernetes.io/role/internal-elb': '1',
       },
@@ -98,7 +98,7 @@ class EksStack extends TerraformStack {
       cidrBlock: '10.0.2.0/24',
       tags: {
         Name: 'subnet-eks-private2',
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
         'kubernetes.io/cluster/eks-app': 'shared',
         'kubernetes.io/role/internal-elb': '1',
       },
@@ -110,7 +110,7 @@ class EksStack extends TerraformStack {
       cidrBlock: '10.0.3.0/24',
       tags: {
         Name: 'subnet-MongoD',
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
         'kubernetes.io/cluster/eks-app': 'shared',
         'kubernetes.io/role/internal-elb': '1',
       },
@@ -120,14 +120,14 @@ class EksStack extends TerraformStack {
       vpcId: this.vpc.id,
       tags: {
         Name: 'igw-eks-app',
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
       },
     });
 
     const eipForNat = new Eip(this, 'EipForNat', {
       tags: {
         Name: 'eip-for-nat-eks-app',
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
       },
     });
 
@@ -136,7 +136,7 @@ class EksStack extends TerraformStack {
       subnetId: this.subnetEksPublic.id,
       tags: {
         Name: 'natGw-eks-app',
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
       },
     });
 
@@ -147,7 +147,7 @@ class EksStack extends TerraformStack {
         vpcId: this.vpc.id,
         tags: {
           Name: 'route-table-eks-app-public-subnet',
-          Owner: 'fdervisi',
+         Owner: cloudServiceTree.userId,
         },
       }
     );
@@ -170,7 +170,7 @@ class EksStack extends TerraformStack {
         vpcId: this.vpc.id,
         tags: {
           Name: 'route-table-eks-app-privatet',
-          Owner: 'fdervisi',
+         Owner: cloudServiceTree.userId,
         },
       }
     );
@@ -234,17 +234,17 @@ class EksStack extends TerraformStack {
         ],
         tags: {
           Name: 'security-group-mongoDB',
-          Owner: 'fdervisi',
+         Owner: cloudServiceTree.userId,
         },
       }
     );
 
     this.userdata = fs.readFileSync('userdata.sh', 'utf8');
 
-    this.mongoDbInstance = new Instance(this, 'instance1', {
+    this.mongoDbInstance = new Instance(this, 'instance-mongoDb', {
       subnetId: this.subnetEksPublic.id,
       instanceType: 't3.micro',
-      tags: { Name: 'MongoDB_centos7', Owner: 'fdervisi' },
+      tags: { Name: 'MongoDB_centos7',Owner: cloudServiceTree.userId },
       ami: 'ami-0a3a6d4d737db3bc1',
       associatePublicIpAddress: true,
       vpcSecurityGroupIds: [securityGroupMongoDb.id],
@@ -254,7 +254,7 @@ class EksStack extends TerraformStack {
 
     this.eip = new Eip(this, 'eip', {
       instance: this.mongoDbInstance.id,
-      tags: { Name: 'eip_MongoDB', Owner: 'fdervisi' },
+      tags: { Name: 'eip_MongoDB',Owner: cloudServiceTree.userId },
     });
 
     const privateHostedZone = new Route53Zone(this, 'route53-zone', {
@@ -264,7 +264,7 @@ class EksStack extends TerraformStack {
           vpcId: this.vpc.id,
         },
       ],
-      tags: { Owner: 'fdervisi' },
+      tags: {Owner: cloudServiceTree.userId },
     });
 
     new Route53Record(this, 'route53-record', {
@@ -344,7 +344,7 @@ class EksStack extends TerraformStack {
         endpointPublicAccess: true,
       },
       tags: {
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
       },
     });
 
@@ -397,26 +397,26 @@ class EksStack extends TerraformStack {
         minSize: 1,
       },
       tags: {
-        Owner: 'fdervisi',
+       Owner: cloudServiceTree.userId,
       },
     });
 
     // We create the Eks cluster within the module, this is so we can access the cluster resource afterwards
-    this.eks = new dataAwsEksCluster.DataAwsEksCluster(this, 'eks-cluster', {
+    this.eks = new dataAwsEksCluster.DataAwsEksCluster(this, 'data-eks-cluster', {
       name: cluster.name,
     });
 
     // We need to fetch the authentication data from the EKS cluster as well
     this.eksAuth = new dataAwsEksClusterAuth.DataAwsEksClusterAuth(
       this,
-      'eks-auth',
+      'data-eks-auth',
       {
         name: cluster.name,
       }
     );
 
     // Add this after creating the EKS cluster
-    new TerraformOutput(this, 'clusterName', {
+    new TerraformOutput(this, 'eks-cluster-name', {
       value: cluster.name,
     });
   }

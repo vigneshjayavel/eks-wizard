@@ -1,0 +1,179 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+        "IEks": {
+            "additionalProperties": false,
+            "properties": {
+                "clusterName": {
+                    "type": "string"
+                },
+                "nodeGroup": {
+                    "$ref": "#/definitions/INodeGroup"
+                },
+                "version": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "clusterName",
+                "nodeGroup",
+                "version"
+            ],
+            "type": "object"
+        },
+        "IInstance": {
+            "additionalProperties": false,
+            "properties": {
+                "ami": {
+                    "type": "string"
+                },
+                "associatePublicIpAddress": {
+                    "type": "boolean"
+                },
+                "eip": {
+                    "type": "boolean"
+                },
+                "instanceType": {
+                    "type": "string"
+                },
+                "keyName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "userData": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "ami",
+                "associatePublicIpAddress",
+                "eip",
+                "instanceType",
+                "keyName",
+                "name",
+                "userData"
+            ],
+            "type": "object"
+        },
+        "INodeGroup": {
+            "additionalProperties": false,
+            "properties": {
+                "instanceTypes": {
+                    "type": "string"
+                },
+                "scalingConfig": {
+                    "$ref": "#/definitions/IScalingConfig"
+                }
+            },
+            "required": [
+                "instanceTypes",
+                "scalingConfig"
+            ],
+            "type": "object"
+        },
+        "IScalingConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "desiredSize": {
+                    "type": "number"
+                },
+                "maxSize": {
+                    "type": "number"
+                },
+                "minSize": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "desiredSize",
+                "maxSize",
+                "minSize"
+            ],
+            "type": "object"
+        },
+        "IVpc": {
+            "additionalProperties": false,
+            "properties": {
+                "cidrBlock": {
+                    "type": "string"
+                },
+                "eks": {
+                    "$ref": "#/definitions/IEks"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "privateHostedZone": {
+                    "type": "string"
+                },
+                "subnet": {
+                    "items": {
+                        "$ref": "#/definitions/Subnet"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "cidrBlock",
+                "name",
+                "privateHostedZone",
+                "subnet"
+            ],
+            "type": "object"
+        },
+        "Subnet": {
+            "additionalProperties": false,
+            "properties": {
+                "cidrBlock": {
+                    "type": "string"
+                },
+                "instance": {
+                    "items": {
+                        "$ref": "#/definitions/IInstance"
+                    },
+                    "type": "array"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tags": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "cidrBlock",
+                "name",
+                "tags",
+                "type"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "region": {
+            "type": "string"
+        },
+        "userId": {
+            "type": "string"
+        },
+        "vpc": {
+            "$ref": "#/definitions/IVpc"
+        }
+    },
+    "required": [
+        "region",
+        "userId",
+        "vpc"
+    ],
+    "type": "object"
+}
+
