@@ -33,18 +33,19 @@ import { Fn } from 'cdktf';
 import { IamRolePolicyAttachment } from '@cdktf/provider-aws/lib/iam-role-policy-attachment';
 // import { Namespace } from '@cdktf/provider-kubernetes/lib/namespace';
 import {
-  // deployment,
+  deployment,
   provider as k8s,
-  //service,
+  service,
+  secret,
 } from '@cdktf/provider-kubernetes/';
 import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
 // import {  } from '@cdktf/provider-helm/lib/provider';
 
-class MyStack extends TerraformStack {
+class EksStack extends TerraformStack {
   public eks: dataAwsEksCluster.DataAwsEksCluster;
   public eksAuth: dataAwsEksClusterAuth.DataAwsEksClusterAuth;
   public vpc: Vpc;
-  public instance: Instance;
+  public mongoDbInstance: Instance;
   public igw: InternetGateway;
   public natGw: NatGateway;
   public subnetEksPrivate1: Subnet;
@@ -55,9 +56,7 @@ class MyStack extends TerraformStack {
   private eip: Eip;
   constructor(scope: Construct, id: string) {
     super(scope, id);
-
     new AwsProvider(this, 'aws', { region: 'eu-south-1' });
-
     const allAvailabilityZones =
       new dataAwsAvailabilityZones.DataAwsAvailabilityZones(
         this,
@@ -174,51 +173,55 @@ class MyStack extends TerraformStack {
       destinationCidrBlock: '0.0.0.0/0',
     });
 
-    const securityGroupMgmt = new SecurityGroup(this, 'worker_group_mgmt_one', {
-      namePrefix: 'worker_group_mgmt_one',
-      vpcId: this.vpc.id,
+    const securityGroupMongoDb = new SecurityGroup(
+      this,
+      'worker_group_mgmt_one',
+      {
+        namePrefix: 'worker_group_mgmt_one',
+        vpcId: this.vpc.id,
 
-      ingress: [
-        {
-          fromPort: 22,
-          toPort: 22,
-          protocol: 'tcp',
+        ingress: [
+          {
+            fromPort: 22,
+            toPort: 22,
+            protocol: 'tcp',
 
-          cidrBlocks: ['0.0.0.0/0'],
-        },
-        {
-          fromPort: 27017,
-          toPort: 27017,
-          protocol: 'tcp',
+            cidrBlocks: ['0.0.0.0/0'],
+          },
+          {
+            fromPort: 27017,
+            toPort: 27017,
+            protocol: 'tcp',
 
-          cidrBlocks: ['0.0.0.0/0'],
-        },
-      ],
-      egress: [
-        {
-          fromPort: 0,
-          toPort: 0,
-          protocol: '-1',
-          cidrBlocks: ['0.0.0.0/0'],
-        },
-      ],
-    });
+            cidrBlocks: ['0.0.0.0/0'],
+          },
+        ],
+        egress: [
+          {
+            fromPort: 0,
+            toPort: 0,
+            protocol: '-1',
+            cidrBlocks: ['0.0.0.0/0'],
+          },
+        ],
+      }
+    );
 
     this.userdata = fs.readFileSync('userdata.sh', 'utf8');
 
-    this.instance = new Instance(this, 'instance1', {
+    this.mongoDbInstance = new Instance(this, 'instance1', {
       subnetId: this.subnetEksPublic.id,
       instanceType: 't3.micro',
       tags: { Name: 'MongoDB_centos7', Owner: 'fdervisi' },
       ami: 'ami-0a3a6d4d737db3bc1',
       associatePublicIpAddress: true,
-      securityGroups: [securityGroupMgmt.id],
+      vpcSecurityGroupIds: [securityGroupMongoDb.id],
       keyName: 'Key_MBP_fdervisi',
       userData: this.userdata,
     });
 
     this.eip = new Eip(this, 'eip', {
-      instance: this.instance.id,
+      instance: this.mongoDbInstance.id,
       tags: { Name: 'eip_MongoDB', Owner: 'fdervisi' },
     });
 
@@ -296,7 +299,6 @@ class MyStack extends TerraformStack {
       }),
     });
 
-    // Create an EKS cluster
     const cluster = new EksCluster(this, 'Cluster', {
       name: 'eks-app',
       roleArn: eksRole.arn,
@@ -310,7 +312,6 @@ class MyStack extends TerraformStack {
       },
     });
 
-    // Create an IAM role for the EKS node group
     const nodeGroupRole = new IamRole(this, 'NodeGroupRole', {
       assumeRolePolicy: JSON.stringify({
         Version: '2012-10-17',
@@ -324,31 +325,26 @@ class MyStack extends TerraformStack {
       }),
     });
 
-    // Attach AmazonEKSWorkerNodePolicy to the IAM role
     new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment1', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy',
     });
 
-    // Attach AmazonEC2ContainerRegistryReadOnly policy to the IAM role
     new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment2', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly',
     });
 
-    // Attach AmazonEC2ContainerRegistryReadOnly policy to the IAM role
     new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment3', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy',
     });
 
-    // Attach AmazonEC2ContainerRegistryReadOnly policy to the IAM role
     new IamRolePolicyAttachment(this, 'NodeGroupRolePolicyAttachment4', {
       role: nodeGroupRole.name,
       policyArn: 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore',
     });
 
-    // Create an EKS node group
     new EksNodeGroup(this, 'NodeGroup', {
       clusterName: cluster.name,
       nodeGroupName: 'my-node-group',
@@ -404,80 +400,143 @@ class KubernetesApplicationStack extends TerraformStack {
       token: clusterAuth.token,
     });
 
-    // const exampleNamespace = new Namespace(this, 'tf-cdk-example', {
-    //   metadata: {
-    //     name: 'tf-cdk-example',
-    //   },
-    // });
+    const mogoDbSecrete = new secret.Secret(this, 'mongodb-secret', {
+      metadata: {
+        name: 'mongodb-secret',
+      },
 
-    // const app = 'nginx-example';
-    // const nginx = new deployment.Deployment(this, 'nginx-deployment', {
-    //   metadata: {
-    //     name: app,
-    //     namespace: exampleNamespace.metadata.name,
-    //     labels: {
-    //       app,
-    //     },
-    //   },
-    //   spec: {
-    //     replicas: '1',
-    //     selector: {
-    //       matchLabels: {
-    //         app,
-    //       },
-    //     },
-    //     template: {
-    //       metadata: {
-    //         labels: {
-    //           app,
-    //         },
-    //       },
-    //       spec: {
-    //         container: [
-    //           {
-    //             image: 'nginx:1.7.8',
-    //             name: 'example',
-    //             port: [
-    //               {
-    //                 containerPort: 80,
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     },
-    //   },
-    // });
+      data: {
+        MONGODB_URI: Buffer.from(
+          'mongodb://admin:admin@mongodb.fdervisi.io:27017/TodoApp'
+        ).toString(),
+      },
+    });
 
-    // new service.Service(this, 'nginx-service', {
-    //   metadata: {
-    //     namespace: nginx.metadata.namespace,
-    //     name: 'nginx-service',
-    //   },
-    //   spec: {
-    //     selector: {
-    //       app,
-    //     },
-    //     port: [
-    //       {
-    //         port: 80,
-    //         targetPort: '80',
-    //       },
-    //     ],
-    //     type: 'NodePort',
-    //   },
-    // });
+    const backendDeployment = new deployment.Deployment(
+      this,
+      'backend-deployment',
+      {
+        metadata: {
+          name: 'backend',
+        },
+        spec: {
+          replicas: '1',
+          selector: {
+            matchLabels: {
+              app: 'backend',
+            },
+          },
+          template: {
+            metadata: {
+              labels: {
+                app: 'backend',
+              },
+            },
+            spec: {
+              container: [
+                {
+                  name: 'backend',
+                  image: 'fdervisi/backend',
+                  env: [
+                    {
+                      name: 'MONGODB_URI',
+                      valueFrom: {
+                        secretKeyRef: {
+                          name: mogoDbSecrete.metadata.name,
+                          key: 'MONGODB_URI',
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      }
+    );
 
+    new service.Service(this, 'backend-service', {
+      metadata: {
+        name: 'backend',
+      },
+      spec: {
+        port: [
+          {
+            port: 3000,
+            targetPort: '3000',
+          },
+        ],
+        selector: {
+          app: backendDeployment.metadata.name,
+        },
+      },
+    });
 
+    const frontendDeployment = new deployment.Deployment(this, 'frontend', {
+      metadata: {
+        name: 'frontend',
+      },
+      spec: {
+        replicas: '1',
+        selector: {
+          matchLabels: {
+            app: 'frontend',
+          },
+        },
+        template: {
+          metadata: {
+            labels: {
+              app: 'frontend',
+            },
+          },
+          spec: {
+            container: [
+              {
+                name: 'frontend',
+                image: 'fdervisi/frontend',
+                port: [
+                  {
+                    containerPort: 3000,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    new service.Service(this, 'frontend-service', {
+      metadata: {
+        name: 'frontend',
+      },
+      spec: {
+        type: 'LoadBalancer',
+        port: [
+          {
+            port: 3000,
+            targetPort: '3000',
+          },
+        ],
+        selector: {
+          app: frontendDeployment.metadata.name,
+        },
+      },
+    });
   }
 }
 
 const app = new App();
-const stack = new MyStack(app, 'eks-app');
+const eksStack = new EksStack(app, 'eks-app');
 
-new KubernetesApplicationStack(app, 'applications', stack.eks, stack.eksAuth);
-
-new CloudBackend(stack, {
+new KubernetesApplicationStack(
+  app,
+  'applications',
+  eksStack.eks,
+  eksStack.eksAuth
+);
+new CloudBackend(eksStack, {
   hostname: 'app.terraform.io',
   organization: 'fdervisi',
   workspaces: new NamedCloudWorkspace('eks-app'),
