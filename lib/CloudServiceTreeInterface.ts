@@ -1,21 +1,21 @@
-interface IScalingConfig {
+export interface IScalingConfig {
   desiredSize: number;
   maxSize: number;
   minSize: number;
 }
 
-interface INodeGroup {
+export interface INodeGroup {
   instanceTypes: string;
   scalingConfig: IScalingConfig;
 }
 
-interface IEks {
+export interface IEks {
   clusterName: string;
   version: string;
   nodeGroup: INodeGroup;
 }
 
-interface IInstance {
+export interface IInstance {
   name: string;
   instanceType: string;
   ami: string;
@@ -25,22 +25,20 @@ interface IInstance {
   keyName: string;
 }
 
-interface Subnet {
+export interface ISubnets {
   name: string;
-  type: string;
+  public: boolean;
   cidrBlock: string;
-  tags: {
-    [key: string]: string;
-  };
+  eks: boolean;
   instance?: IInstance[];
 }
 
-interface IVpc {
+export interface IVpc {
   cidrBlock: string;
   name: string;
   privateHostedZone: string;
   eks?: IEks;
-  subnet: Subnet[];
+  subnets: ISubnets[];
 }
 
 export interface ICloudServiceTree {

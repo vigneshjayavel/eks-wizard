@@ -8,26 +8,17 @@ import {
 } from 'cdktf';
 import { AwsProvider } from '@cdktf/provider-aws/lib/provider';
 import * as fs from 'fs';
-import { Vpc } from '@cdktf/provider-aws/lib/vpc';
-import { Subnet } from '@cdktf/provider-aws/lib/subnet';
-import { RouteTable } from '@cdktf/provider-aws/lib/route-table';
-import { Route } from '@cdktf/provider-aws/lib/route';
+
 import { Instance } from '@cdktf/provider-aws/lib/instance';
 import { SecurityGroup } from '@cdktf/provider-aws/lib/security-group';
-import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-association';
+
 import { Eip } from '@cdktf/provider-aws/lib/eip';
 import { Route53Record } from '@cdktf/provider-aws/lib/route53-record';
 import { Route53Zone } from '@cdktf/provider-aws/lib/route53-zone';
 import { IamRole } from '@cdktf/provider-aws/lib/iam-role';
 import { EksCluster } from '@cdktf/provider-aws/lib/eks-cluster';
 import { EksNodeGroup } from '@cdktf/provider-aws/lib/eks-node-group';
-import {
-  dataAwsAvailabilityZones,
-  dataAwsEksCluster,
-  dataAwsEksClusterAuth,
-} from '@cdktf/provider-aws';
-import { InternetGateway } from '@cdktf/provider-aws/lib/internet-gateway';
-import { NatGateway } from '@cdktf/provider-aws/lib/nat-gateway';
+import { dataAwsEksCluster, dataAwsEksClusterAuth } from '@cdktf/provider-aws';
 import { Fn } from 'cdktf';
 import { IamRolePolicyAttachment } from '@cdktf/provider-aws/lib/iam-role-policy-attachment';
 import {
@@ -38,167 +29,24 @@ import {
 } from '@cdktf/provider-kubernetes/';
 import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
 import { cloudServiceTree } from './lib/cloudServiceTreeParser';
+import { NetworkStack } from './lib/network';
 
 class EksStack extends TerraformStack {
   public eks: dataAwsEksCluster.DataAwsEksCluster;
   public eksAuth: dataAwsEksClusterAuth.DataAwsEksClusterAuth;
-  public vpc: Vpc;
   public mongoDbInstance: Instance;
-  public igw: InternetGateway;
-  public natGw: NatGateway;
-  public subnetEksPrivate1: Subnet;
-  public subnetEksPrivate2: Subnet;
-  public subnetEksPrivate3: Subnet;
-  public subnetEksPublic: Subnet;
   private userdata: string;
   private eip: Eip;
+  private network: NetworkStack;
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
     new AwsProvider(this, 'aws', { region: cloudServiceTree.region });
-    const allAvailabilityZones =
-      new dataAwsAvailabilityZones.DataAwsAvailabilityZones(
-        this,
-        'all-availability-zones',
-        {}
-      ).names;
-    
-    this.vpc = new Vpc(this, 'vpc-eks-app', {
-      cidrBlock: cloudServiceTree.vpc.cidrBlock,
-      enableDnsHostnames: true,
-      tags: { Name: cloudServiceTree.vpc.name, Owner: cloudServiceTree.userId },
-    });
 
-    this.subnetEksPrivate1 = new Subnet(this, 'subnet-eks-private1', {
-      vpcId: this.vpc.id,
-      cidrBlock: '10.0.0.0/24',
-      tags: {
-        Name: 'subnet-eks-private1',
-       Owner: cloudServiceTree.userId,
-        'kubernetes.io/cluster/eks-app': 'shared',
-        'kubernetes.io/role/elb': '1',
-      },
-      availabilityZone: Fn.element(allAvailabilityZones, 0),
-    });
-
-    this.subnetEksPrivate2 = new Subnet(this, 'subnet-eks-private2', {
-      vpcId: this.vpc.id,
-      cidrBlock: '10.0.1.0/24',
-      tags: {
-        Name: 'subnet-eks-private2',
-       Owner: cloudServiceTree.userId,
-        'kubernetes.io/cluster/eks-app': 'shared',
-        'kubernetes.io/role/internal-elb': '1',
-      },
-      availabilityZone: Fn.element(allAvailabilityZones, 1),
-    });
-
-    this.subnetEksPrivate3 = new Subnet(this, 'subnet-eks-private3', {
-      vpcId: this.vpc.id,
-      cidrBlock: '10.0.2.0/24',
-      tags: {
-        Name: 'subnet-eks-private2',
-       Owner: cloudServiceTree.userId,
-        'kubernetes.io/cluster/eks-app': 'shared',
-        'kubernetes.io/role/internal-elb': '1',
-      },
-      availabilityZone: Fn.element(allAvailabilityZones, 2),
-    });
-
-    this.subnetEksPublic = new Subnet(this, 'subnet-eks-public', {
-      vpcId: this.vpc.id,
-      cidrBlock: '10.0.3.0/24',
-      tags: {
-        Name: 'subnet-MongoD',
-       Owner: cloudServiceTree.userId,
-        'kubernetes.io/cluster/eks-app': 'shared',
-        'kubernetes.io/role/internal-elb': '1',
-      },
-    });
-
-    this.igw = new InternetGateway(this, 'igw', {
-      vpcId: this.vpc.id,
-      tags: {
-        Name: 'igw-eks-app',
-       Owner: cloudServiceTree.userId,
-      },
-    });
-
-    const eipForNat = new Eip(this, 'EipForNat', {
-      tags: {
-        Name: 'eip-for-nat-eks-app',
-       Owner: cloudServiceTree.userId,
-      },
-    });
-
-    this.natGw = new NatGateway(this, 'natGw', {
-      allocationId: eipForNat.id,
-      subnetId: this.subnetEksPublic.id,
-      tags: {
-        Name: 'natGw-eks-app',
-       Owner: cloudServiceTree.userId,
-      },
-    });
-
-    const routeTablePublic = new RouteTable(
-      this,
-      'route-table-eks-app-public-subnet',
-      {
-        vpcId: this.vpc.id,
-        tags: {
-          Name: 'route-table-eks-app-public-subnet',
-         Owner: cloudServiceTree.userId,
-        },
-      }
-    );
-
-    new RouteTableAssociation(this, 'route-table-association', {
-      routeTableId: routeTablePublic.id,
-      subnetId: this.subnetEksPublic.id,
-    });
-
-    new Route(this, 'route-to-igw', {
-      routeTableId: routeTablePublic.id,
-      gatewayId: this.igw.id,
-      destinationCidrBlock: '0.0.0.0/0',
-    });
-
-    const routeTablePrivate = new RouteTable(
-      this,
-      'route-table-eks-app-private',
-      {
-        vpcId: this.vpc.id,
-        tags: {
-          Name: 'route-table-eks-app-privatet',
-         Owner: cloudServiceTree.userId,
-        },
-      }
-    );
-
-    new RouteTableAssociation(this, 'route-table-association-1', {
-      routeTableId: routeTablePrivate.id,
-      subnetId: this.subnetEksPrivate1.id,
-    });
-
-    new RouteTableAssociation(this, 'route-table-association-2', {
-      routeTableId: routeTablePrivate.id,
-      subnetId: this.subnetEksPrivate2.id,
-    });
-    new RouteTableAssociation(this, 'route-table-association-3', {
-      routeTableId: routeTablePrivate.id,
-      subnetId: this.subnetEksPrivate3.id,
-    });
-
-    new Route(this, 'route-to-natgw', {
-      routeTableId: routeTablePublic.id,
-      gatewayId: this.igw.id,
-      destinationCidrBlock: '0.0.0.0/0',
-    });
-
-    new Route(this, 'route-to-natGw', {
-      natGatewayId: this.natGw.id,
-      routeTableId: routeTablePrivate.id,
-      destinationCidrBlock: '0.0.0.0/0',
+    this.network = new NetworkStack(this, 'network', {
+      userId: cloudServiceTree.userId,
+      eksCluster: cloudServiceTree.vpc.eks?.clusterName,
+      vpc: cloudServiceTree.vpc,
     });
 
     const securityGroupMongoDb = new SecurityGroup(
@@ -206,7 +54,7 @@ class EksStack extends TerraformStack {
       'security-group-mongoDB',
       {
         namePrefix: 'security-group-mongoDB',
-        vpcId: this.vpc.id,
+        vpcId: this.network.vpc.id,
         ingress: [
           {
             fromPort: 22,
@@ -234,7 +82,7 @@ class EksStack extends TerraformStack {
         ],
         tags: {
           Name: 'security-group-mongoDB',
-         Owner: cloudServiceTree.userId,
+          Owner: cloudServiceTree.userId,
         },
       }
     );
@@ -242,9 +90,9 @@ class EksStack extends TerraformStack {
     this.userdata = fs.readFileSync('userdata.sh', 'utf8');
 
     this.mongoDbInstance = new Instance(this, 'instance-mongoDb', {
-      subnetId: this.subnetEksPublic.id,
+      subnetId: this.network.subnets[3].id,
       instanceType: 't3.micro',
-      tags: { Name: 'MongoDB_centos7',Owner: cloudServiceTree.userId },
+      tags: { Name: 'MongoDB_centos7', Owner: cloudServiceTree.userId },
       ami: 'ami-0a3a6d4d737db3bc1',
       associatePublicIpAddress: true,
       vpcSecurityGroupIds: [securityGroupMongoDb.id],
@@ -254,17 +102,17 @@ class EksStack extends TerraformStack {
 
     this.eip = new Eip(this, 'eip', {
       instance: this.mongoDbInstance.id,
-      tags: { Name: 'eip_MongoDB',Owner: cloudServiceTree.userId },
+      tags: { Name: 'eip_MongoDB', Owner: cloudServiceTree.userId },
     });
 
     const privateHostedZone = new Route53Zone(this, 'route53-zone', {
       name: 'fdervisi.io',
       vpc: [
         {
-          vpcId: this.vpc.id,
+          vpcId: this.network.vpc.id,
         },
       ],
-      tags: {Owner: cloudServiceTree.userId },
+      tags: { Owner: cloudServiceTree.userId },
     });
 
     new Route53Record(this, 'route53-record', {
@@ -337,14 +185,14 @@ class EksStack extends TerraformStack {
       roleArn: eksRole.arn,
       vpcConfig: {
         subnetIds: [
-          this.subnetEksPrivate1.id,
-          this.subnetEksPrivate2.id,
-          this.subnetEksPrivate3.id,
+          this.network.subnets[0].id,
+          this.network.subnets[1].id,
+          this.network.subnets[2].id,
         ],
         endpointPublicAccess: true,
       },
       tags: {
-       Owner: cloudServiceTree.userId,
+        Owner: cloudServiceTree.userId,
       },
     });
 
@@ -361,25 +209,41 @@ class EksStack extends TerraformStack {
       }),
     });
 
-    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-1', {
-      role: nodeGroupRole.name,
-      policyArn: 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy',
-    });
+    new IamRolePolicyAttachment(
+      this,
+      'iam-eks-node-group-policy-attachment-1',
+      {
+        role: nodeGroupRole.name,
+        policyArn: 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy',
+      }
+    );
 
-    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-2', {
-      role: nodeGroupRole.name,
-      policyArn: 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly',
-    });
+    new IamRolePolicyAttachment(
+      this,
+      'iam-eks-node-group-policy-attachment-2',
+      {
+        role: nodeGroupRole.name,
+        policyArn: 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly',
+      }
+    );
 
-    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-3', {
-      role: nodeGroupRole.name,
-      policyArn: 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy',
-    });
+    new IamRolePolicyAttachment(
+      this,
+      'iam-eks-node-group-policy-attachment-3',
+      {
+        role: nodeGroupRole.name,
+        policyArn: 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy',
+      }
+    );
 
-    new IamRolePolicyAttachment(this, 'iam-eks-node-group-policy-attachment-4', {
-      role: nodeGroupRole.name,
-      policyArn: 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore',
-    });
+    new IamRolePolicyAttachment(
+      this,
+      'iam-eks-node-group-policy-attachment-4',
+      {
+        role: nodeGroupRole.name,
+        policyArn: 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore',
+      }
+    );
 
     new EksNodeGroup(this, 'eks-node-group', {
       clusterName: cluster.name,
@@ -387,9 +251,9 @@ class EksStack extends TerraformStack {
       nodeRoleArn: nodeGroupRole.arn,
       instanceTypes: ['t3.small'],
       subnetIds: [
-        this.subnetEksPrivate1.id,
-        this.subnetEksPrivate2.id,
-        this.subnetEksPrivate3.id,
+        this.network.subnets[0].id,
+        this.network.subnets[1].id,
+        this.network.subnets[2].id,
       ],
       scalingConfig: {
         desiredSize: 3,
@@ -397,14 +261,18 @@ class EksStack extends TerraformStack {
         minSize: 1,
       },
       tags: {
-       Owner: cloudServiceTree.userId,
+        Owner: cloudServiceTree.userId,
       },
     });
 
     // We create the Eks cluster within the module, this is so we can access the cluster resource afterwards
-    this.eks = new dataAwsEksCluster.DataAwsEksCluster(this, 'data-eks-cluster', {
-      name: cluster.name,
-    });
+    this.eks = new dataAwsEksCluster.DataAwsEksCluster(
+      this,
+      'data-eks-cluster',
+      {
+        name: cluster.name,
+      }
+    );
 
     // We need to fetch the authentication data from the EKS cluster as well
     this.eksAuth = new dataAwsEksClusterAuth.DataAwsEksClusterAuth(

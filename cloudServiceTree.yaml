@@ -1,7 +1,7 @@
 userId: fdervisi
 region: eu-central-1
 vpc:
-  cidrBlock: '10.0.0.0/20'
+  cidrBlock: 10.0.0.0/20
   name: vpc-eks-app
   privateHostedZone: fdervisi.io
   eks:
@@ -13,31 +13,23 @@ vpc:
         desiredSize: 3
         maxSize: 5
         minSize: 1
-  subnet:
+  subnets:
     - name: subnet-eks-private1
-      type: private
-      cidrBlock: '10.0.0.0/24'
-      tags:
-        'kubernetes.io/cluster/eks-app': 'shared'
-        'kubernetes.io/role/internal-elb': '1'
+      public: false
+      cidrBlock: 10.0.1.0/24
+      eks: true
     - name: subnet-eks-private2
-      type: private
-      cidrBlock: '10.0.1.0/24'
-      tags:
-        'kubernetes.io/cluster/eks-app': 'shared'
-        'kubernetes.io/role/internal-elb': '1'
+      public: false
+      cidrBlock: 10.0.2.0/24
+      eks: true
     - name: subnet-eks-private3
-      type: private
-      cidrBlock: '10.0.2.0/24'
-      tags:
-        'kubernetes.io/cluster/eks-app': 'shared'
-        'kubernetes.io/role/internal-elb': '1'
+      public: false
+      cidrBlock: 10.0.3.0/24
+      eks: true
     - name: subnet-mongoDB
-      type: public
-      cidrBlock: '10.0.3.0/24'
-      tags:
-        'kubernetes.io/cluster/eks-app': 'shared'
-        'kubernetes.io/role/internal-elb': '1'
+      public: true
+      cidrBlock: 10.0.4.0/24
+      eks: true
       instance:
         - name: instance-mongoDb
           instanceType: t3.micro
@@ -46,4 +38,3 @@ vpc:
           eip: true
           userData: userdata.sh
           keyName: Key_MBP_fdervisi
-

@@ -94,6 +94,36 @@
             ],
             "type": "object"
         },
+        "ISubnets": {
+            "additionalProperties": false,
+            "properties": {
+                "cidrBlock": {
+                    "type": "string"
+                },
+                "eks": {
+                    "type": "boolean"
+                },
+                "instance": {
+                    "items": {
+                        "$ref": "#/definitions/IInstance"
+                    },
+                    "type": "array"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "cidrBlock",
+                "eks",
+                "name",
+                "public"
+            ],
+            "type": "object"
+        },
         "IVpc": {
             "additionalProperties": false,
             "properties": {
@@ -109,9 +139,9 @@
                 "privateHostedZone": {
                     "type": "string"
                 },
-                "subnet": {
+                "subnets": {
                     "items": {
-                        "$ref": "#/definitions/Subnet"
+                        "$ref": "#/definitions/ISubnets"
                     },
                     "type": "array"
                 }
@@ -120,40 +150,7 @@
                 "cidrBlock",
                 "name",
                 "privateHostedZone",
-                "subnet"
-            ],
-            "type": "object"
-        },
-        "Subnet": {
-            "additionalProperties": false,
-            "properties": {
-                "cidrBlock": {
-                    "type": "string"
-                },
-                "instance": {
-                    "items": {
-                        "$ref": "#/definitions/IInstance"
-                    },
-                    "type": "array"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "tags": {
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "type": "object"
-                },
-                "type": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "cidrBlock",
-                "name",
-                "tags",
-                "type"
+                "subnets"
             ],
             "type": "object"
         }
