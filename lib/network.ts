@@ -10,13 +10,13 @@ import { Eip } from '@cdktf/provider-aws/lib/eip';
 import { RouteTable } from '@cdktf/provider-aws/lib/route-table';
 import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-association';
 
-interface NetworkStackConfig {
+interface VpcStackConfig {
   vpc: IVpc;
   userId: string;
   eksCluster?: string;
 }
 
-export class NetworkStack extends Construct {
+export class VpcStack extends Construct {
   public vpc: Vpc;
   public subnets: Subnet[] = [];
   private allAvailabilityZones: string[];
@@ -27,7 +27,7 @@ export class NetworkStack extends Construct {
   private routeTablePublic: RouteTable;
   private routeTablePrivate: RouteTable;
 
-  constructor(scope: Construct, id: string, config: NetworkStackConfig) {
+  constructor(scope: Construct, id: string, config: VpcStackConfig) {
     super(scope, id);
 
     this.allAvailabilityZones =
