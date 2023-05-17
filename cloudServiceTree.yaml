@@ -1,5 +1,5 @@
 userId: fdervisi
-region: eu-central-1
+region: eu-south-1
 vpc:
   cidrBlock: 10.0.0.0/20
   name: vpc-eks-app
@@ -38,3 +38,24 @@ vpc:
           eip: true
           userData: userdata.sh
           keyName: Key_MBP_fdervisi
+          securityGroup:
+            ingress:
+              - cidrBlocks:
+                  - 0.0.0.0/0
+                fromPort: 22
+                toPort: 22
+                protocol: "TCP"
+              - cidrBlocks:
+                  - 0.0.0.0/0
+                fromPort: 27017
+                toPort: 27017
+                protocol: "TCP"
+            egress:
+              - cidrBlocks:
+                  - 0.0.0.0/0
+                fromPort: 0
+                toPort: 0
+                protocol: "-1"
+            tags:
+              Owner: fdervisi
+            

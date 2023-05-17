@@ -43,6 +43,9 @@
                 "name": {
                     "type": "string"
                 },
+                "securityGroup": {
+                    "$ref": "#/definitions/ISecurityGroup"
+                },
                 "userData": {
                     "type": "string"
                 }
@@ -92,6 +95,152 @@
                 "maxSize",
                 "minSize"
             ],
+            "type": "object"
+        },
+        "ISecurityGroup": {
+            "additionalProperties": false,
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "egress": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#egress SecurityGroup#egress}",
+                    "items": {
+                        "$ref": "#/definitions/ISecurityGroupEgress"
+                    },
+                    "type": "array"
+                },
+                "ingress": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ingress SecurityGroup#ingress}",
+                    "items": {
+                        "$ref": "#/definitions/ISecurityGroupIngress"
+                    },
+                    "type": "array"
+                },
+                "name": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#name SecurityGroup#name}",
+                    "type": "string"
+                },
+                "namePrefix": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#name_prefix SecurityGroup#name_prefix}",
+                    "type": "string"
+                },
+                "revokeRulesOnDelete": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#revoke_rules_on_delete SecurityGroup#revoke_rules_on_delete}",
+                    "type": "boolean"
+                },
+                "tags": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#tags SecurityGroup#tags}",
+                    "type": "object"
+                },
+                "vpcId": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#vpc_id SecurityGroup#vpc_id}",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "ISecurityGroupEgress": {
+            "additionalProperties": false,
+            "properties": {
+                "cidrBlocks": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#cidr_blocks SecurityGroup#cidr_blocks}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "description": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#description SecurityGroup#description}",
+                    "type": "string"
+                },
+                "fromPort": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#from_port SecurityGroup#from_port}",
+                    "type": "number"
+                },
+                "ipv6CidrBlocks": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ipv6_cidr_blocks SecurityGroup#ipv6_cidr_blocks}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "prefixListIds": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#prefix_list_ids SecurityGroup#prefix_list_ids}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "protocol": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#protocol SecurityGroup#protocol}",
+                    "type": "string"
+                },
+                "securityGroups": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#security_groups SecurityGroup#security_groups}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "toPort": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#to_port SecurityGroup#to_port}",
+                    "type": "number"
+                }
+            },
+            "type": "object"
+        },
+        "ISecurityGroupIngress": {
+            "additionalProperties": false,
+            "properties": {
+                "cidrBlocks": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#cidr_blocks SecurityGroup#cidr_blocks}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "description": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#description SecurityGroup#description}",
+                    "type": "string"
+                },
+                "fromPort": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#from_port SecurityGroup#from_port}",
+                    "type": "number"
+                },
+                "ipv6CidrBlocks": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ipv6_cidr_blocks SecurityGroup#ipv6_cidr_blocks}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "prefixListIds": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#prefix_list_ids SecurityGroup#prefix_list_ids}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "protocol": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#protocol SecurityGroup#protocol}",
+                    "type": "string"
+                },
+                "securityGroups": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#security_groups SecurityGroup#security_groups}",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "toPort": {
+                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#to_port SecurityGroup#to_port}",
+                    "type": "number"
+                }
+            },
             "type": "object"
         },
         "ISubnets": {

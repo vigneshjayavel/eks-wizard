@@ -9,6 +9,7 @@ import { NatGateway } from '@cdktf/provider-aws/lib/nat-gateway';
 import { Eip } from '@cdktf/provider-aws/lib/eip';
 import { RouteTable } from '@cdktf/provider-aws/lib/route-table';
 import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-association';
+import { InstanceStack } from './instanceStack';
 
 interface VpcStackConfig {
   vpc: IVpc;
@@ -53,7 +54,7 @@ export class VpcStack extends Construct {
 
     this.eipNat = new Eip(this, `eip-nat-${config.vpc.name}`, {
       tags: {
-        Name: 'eip-natGw-${config.vpc.name}',
+        Name: `eip-natGw-${config.vpc.name}`,
         Owner: config.userId,
       },
     });
@@ -71,7 +72,7 @@ export class VpcStack extends Construct {
       allocationId: this.eipNat.id,
       subnetId: this.natGwPublicSubnet.id,
       tags: {
-        Name: 'natGw-${config.vpc.name}',
+        Name: `natGw-${config.vpc.name}`,
         Owner: config.userId,
       },
     });
@@ -100,9 +101,9 @@ export class VpcStack extends Construct {
       }
     );
 
-    config.vpc.subnets.forEach((subnetconfig, i) => {
+    config.vpc.subnets.forEach((subnetItem, i) => {
       let tags;
-      if (subnetconfig.eks && subnetconfig.public) {
+      if (subnetItem.eks && subnetItem.public) {
         tags = {
           [`kubernetes.io/cluster/${config.eksCluster}`]: `shared`,
           'kubernetes.io/role/elb': '1',
@@ -116,9 +117,9 @@ export class VpcStack extends Construct {
         };
       }
       const availabilityZoneIndex = i % this.allAvailabilityZones.length;
-      const subnet = new Subnet(this, subnetconfig.name, {
+      const subnet = new Subnet(this, subnetItem.name, {
         vpcId: this.vpc.id,
-        cidrBlock: subnetconfig.cidrBlock,
+        cidrBlock: subnetItem.cidrBlock,
         tags: tags,
         availabilityZone: Fn.element(
           this.allAvailabilityZones,
@@ -126,7 +127,7 @@ export class VpcStack extends Construct {
         ),
       });
 
-      if (subnetconfig.public) {
+      if (subnetItem.public) {
         new RouteTableAssociation(
           this,
           `route-table-association-public-${config.vpc.name}${i}`,
@@ -144,6 +145,17 @@ export class VpcStack extends Construct {
             subnetId: subnet.id,
           }
         );
+      }
+
+      if (subnetItem.instance) {
+        subnetItem.instance.forEach((instanceItem) => {
+          new InstanceStack(this, `instance-${instanceItem.name}`, {
+            userId: config.userId,
+            subnetId: subnet.id,
+            vpcId: this.vpc.id,
+            instance: instanceItem,
+          });
+        });
       }
 
       this.subnets.push(subnet);
