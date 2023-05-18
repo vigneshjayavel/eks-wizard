@@ -13,6 +13,7 @@ import { InstanceStack } from './instanceStack';
 import { PrivateDnsZoneStack } from './privateDnsZoneStack';
 import { EksStack } from './eksStack';
 import { KubernetesApplicationStack } from './kubernetesApplicationStack';
+import { Route } from '@cdktf/provider-aws/lib/route';
 
 interface VpcStackConfig {
   vpc: IVpc;
@@ -110,6 +111,27 @@ export class VpcStack extends Construct {
           Name: 'route-table-eks-app-private-subnet',
           Owner: config.userId,
         },
+      }
+    );
+
+    new Route(this, `route-to-igw-${config.vpc.name}`, {
+      routeTableId: this.routeTablePublic.id,
+      gatewayId: this.igw.id,
+      destinationCidrBlock: '0.0.0.0/0',
+    });
+
+    new Route(this, `route-to-natGw-${config.vpc.name}`, {
+      routeTableId: this.routeTablePrivate.id,
+      natGatewayId: this.natGw.id,
+      destinationCidrBlock: '0.0.0.0/0',
+    });
+
+    new RouteTableAssociation(
+      this,
+      `route-table-association-natGw-public-${config.vpc.name}`,
+      {
+        routeTableId: this.routeTablePublic.id,
+        subnetId: this.natGwPublicSubnet.id,
       }
     );
 

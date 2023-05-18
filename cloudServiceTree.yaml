@@ -1,4 +1,6 @@
 userId: fdervisi
+s3:
+  bucketName: fdervisi-mongodb-backup
 regions: 
   - name: eu-south-1
     vpc:
@@ -35,7 +37,7 @@ regions:
             public: true
             cidrBlock: 10.0.4.0/24
             availabilityZone: 0
-            eks: true
+            eks: false
             instance:
               - name: instance-mongoDb
                 instanceType: t3.micro
