@@ -5,6 +5,10 @@
         "IEks": {
             "additionalProperties": false,
             "properties": {
+                "KubernetesApplication": {
+                    "default": false,
+                    "type": "boolean"
+                },
                 "clusterName": {
                     "type": "string"
                 },
@@ -16,6 +20,7 @@
                 }
             },
             "required": [
+                "KubernetesApplication",
                 "clusterName",
                 "nodeGroup",
                 "version"

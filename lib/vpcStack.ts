@@ -12,6 +12,7 @@ import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-assoc
 import { InstanceStack } from './instanceStack';
 import { PrivateDnsZoneStack } from './privateDnsZoneStack';
 import { EksStack } from './eksStack';
+import { KubernetesApplicationStack } from './kubernetesApplicationStack';
 
 interface VpcStackConfig {
   vpc: IVpc;
@@ -183,12 +184,20 @@ export class VpcStack extends Construct {
     });
 
     if (config.eks) {
-      new EksStack(this, `eks-stack-${config.vpc.name}$`, {
+      const eksStack = new EksStack(this, `eks-stack-${config.vpc.name}$`, {
         eks: config.eks,
         subnetIds: this.eksSubnets,
         userId: config.userId,
         vpcId: this.vpc.id,
       });
+
+      if (config.eks.KubernetesApplication) {
+        new KubernetesApplicationStack(this, 'applications', {
+          cluster: eksStack.eks,
+          userId: config.userId,
+          clusterAuth: eksStack.eksAuth,
+        });
+      }
     }
 
     new PrivateDnsZoneStack(this, `private-dns-zone-${config.vpc.name}$`, {

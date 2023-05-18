@@ -117,6 +117,10 @@ export interface IEks {
   clusterName: string;
   version: string;
   nodeGroup: INodeGroup;
+  /**
+   * @default false
+   */
+  KubernetesApplication: boolean;
 }
 
 export interface IInstance {
@@ -136,10 +140,10 @@ export interface ISubnets {
   public: boolean;
   cidrBlock: string;
   eks: boolean;
-   /**
+  /**
    * @default 0
    */
-  availabilityZone:number;
+  availabilityZone: number;
   instance?: IInstance[];
 }
 
