@@ -16,7 +16,11 @@ export class InstanceStack extends Construct {
   private securityGroup: SecurityGroup;
   public instance: Instance;
   private userData: string = '';
-  public eip: Eip;
+  private eip: Eip;
+  public privateDns: { ip?: string; hostname?: string } = {
+    ip: '',
+    hostname: ''
+  };
 
   constructor(scope: Construct, id: string, config: InstanceStackConfig) {
     super(scope, id);
@@ -64,5 +68,12 @@ export class InstanceStack extends Construct {
         Owner: config.userId,
       },
     });
+
+    // if (config.instance.privatDnsHostName) {
+      this.privateDns = {
+        ip: this.eip.publicIp,
+        hostname: config.instance.privatDnsHostName,
+      };
+    // }
   }
 }

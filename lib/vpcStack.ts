@@ -1,6 +1,6 @@
 import { Construct } from 'constructs';
 import { Fn } from 'cdktf';
-import { IVpc } from './CloudServiceTreeInterface';
+import { IEks, IVpc } from './CloudServiceTreeInterface';
 import { Vpc } from '@cdktf/provider-aws/lib/vpc';
 import { dataAwsAvailabilityZones } from '@cdktf/provider-aws';
 import { Subnet } from '@cdktf/provider-aws/lib/subnet';
@@ -10,16 +10,19 @@ import { Eip } from '@cdktf/provider-aws/lib/eip';
 import { RouteTable } from '@cdktf/provider-aws/lib/route-table';
 import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-association';
 import { InstanceStack } from './instanceStack';
+import { PrivateDnsZoneStack } from './privateDnsZoneStack';
+import { EksStack } from './eksStack';
 
 interface VpcStackConfig {
   vpc: IVpc;
   userId: string;
-  eksCluster?: string;
+  eks?: IEks;
 }
 
 export class VpcStack extends Construct {
-  public vpc: Vpc;
+  private vpc: Vpc;
   public subnets: Subnet[] = [];
+  private eksSubnets: string[] = [];
   private allAvailabilityZones: string[];
   public igw: InternetGateway;
   public natGw: NatGateway;
@@ -27,6 +30,10 @@ export class VpcStack extends Construct {
   private natGwPublicSubnet: Subnet;
   private routeTablePublic: RouteTable;
   private routeTablePrivate: RouteTable;
+  public privateDns: { ip?: string; hostname?: string }[] = [];
+  get id(): string {
+    return this.vpc.id;
+  }
 
   constructor(scope: Construct, id: string, config: VpcStackConfig) {
     super(scope, id);
@@ -65,6 +72,10 @@ export class VpcStack extends Construct {
       {
         cidrBlock: config.vpc.cidrBlock.slice(0, -2) + '24',
         vpcId: this.vpc.id,
+        tags: {
+          Name: `subnet-natGw-public-${config.vpc.name}`,
+          Owner: config.userId,
+        },
       }
     );
 
@@ -95,7 +106,7 @@ export class VpcStack extends Construct {
       {
         vpcId: this.vpc.id,
         tags: {
-          Name: 'route-table-eks-app-public-subnet',
+          Name: 'route-table-eks-app-private-subnet',
           Owner: config.userId,
         },
       }
@@ -105,14 +116,15 @@ export class VpcStack extends Construct {
       let tags;
       if (subnetItem.eks && subnetItem.public) {
         tags = {
-          [`kubernetes.io/cluster/${config.eksCluster}`]: `shared`,
+          [`kubernetes.io/cluster/${config.eks?.clusterName}`]: `shared`,
           'kubernetes.io/role/elb': '1',
           Owner: config.userId,
         };
       } else {
         tags = {
-          [`kubernetes.io/cluster/${config.eksCluster}`]: 'shared',
+          [`kubernetes.io/cluster/${config.eks?.clusterName}`]: 'shared',
           'kubernetes.io/role/internal-elb': '1',
+          Name: subnetItem.name,
           Owner: config.userId,
         };
       }
@@ -149,16 +161,40 @@ export class VpcStack extends Construct {
 
       if (subnetItem.instance) {
         subnetItem.instance.forEach((instanceItem) => {
-          new InstanceStack(this, `instance-${instanceItem.name}`, {
-            userId: config.userId,
-            subnetId: subnet.id,
-            vpcId: this.vpc.id,
-            instance: instanceItem,
-          });
+          const instance = new InstanceStack(
+            this,
+            `instance-${instanceItem.name}`,
+            {
+              userId: config.userId,
+              subnetId: subnet.id,
+              vpcId: this.vpc.id,
+              instance: instanceItem,
+            }
+          );
+          if (instance?.privateDns) {
+            this.privateDns.push(instance.privateDns);
+          }
         });
       }
-
       this.subnets.push(subnet);
+      if (subnetItem.eks) {
+        this.eksSubnets.push(subnet.id);
+      }
+    });
+
+    if (config.eks) {
+      new EksStack(this, `eks-stack-${config.vpc.name}$`, {
+        eks: config.eks,
+        subnetIds: this.eksSubnets,
+        userId: config.userId,
+        vpcId: this.vpc.id,
+      });
+    }
+
+    new PrivateDnsZoneStack(this, `private-dns-zone-${config.vpc.name}$`, {
+      vpcId: this.vpc.id,
+      privateDns: this.privateDns,
+      userId: config.userId,
     });
   }
 }

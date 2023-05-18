@@ -126,6 +126,7 @@ export interface IInstance {
   associatePublicIpAddress: boolean;
   eip: boolean;
   userData: string;
+  privatDnsHostName: string;
   keyName: string;
   securityGroup: ISecurityGroup;
 }

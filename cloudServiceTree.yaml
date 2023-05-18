@@ -36,6 +36,7 @@ vpc:
           ami: ami-0a3a6d4d737db3bc1
           associatePublicIpAddress: true
           eip: true
+          privatDnsHostName: mongodb
           userData: userdata.sh
           keyName: Key_MBP_fdervisi
           securityGroup:
