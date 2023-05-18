@@ -136,6 +136,10 @@ export interface ISubnets {
   public: boolean;
   cidrBlock: string;
   eks: boolean;
+   /**
+   * @default 0
+   */
+  availabilityZone:number;
   instance?: IInstance[];
 }
 
@@ -149,6 +153,10 @@ export interface IVpc {
 
 export interface ICloudServiceTree {
   userId: string;
-  region: string;
-  vpc: IVpc;
+  regions: IRegion[];
+}
+
+export interface IRegion {
+  name: string;
+  vpc: IVpc[];
 }

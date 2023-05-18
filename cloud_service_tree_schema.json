@@ -317,7 +317,10 @@
             "type": "string"
         },
         "vpc": {
-            "$ref": "#/definitions/IVpc"
+            "items": {
+                "$ref": "#/definitions/IVpc"
+            },
+            "type": "array"
         }
     },
     "required": [

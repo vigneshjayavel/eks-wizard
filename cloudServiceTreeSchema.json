@@ -82,6 +82,25 @@
             ],
             "type": "object"
         },
+        "IRegion": {
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "vpc": {
+                    "items": {
+                        "$ref": "#/definitions/IVpc"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "name",
+                "vpc"
+            ],
+            "type": "object"
+        },
         "IScalingConfig": {
             "additionalProperties": false,
             "properties": {
@@ -251,6 +270,10 @@
         "ISubnets": {
             "additionalProperties": false,
             "properties": {
+                "availabilityZone": {
+                    "default": 0,
+                    "type": "number"
+                },
                 "cidrBlock": {
                     "type": "string"
                 },
@@ -271,6 +294,7 @@
                 }
             },
             "required": [
+                "availabilityZone",
                 "cidrBlock",
                 "eks",
                 "name",
@@ -310,20 +334,19 @@
         }
     },
     "properties": {
-        "region": {
-            "type": "string"
+        "regions": {
+            "items": {
+                "$ref": "#/definitions/IRegion"
+            },
+            "type": "array"
         },
         "userId": {
             "type": "string"
-        },
-        "vpc": {
-            "$ref": "#/definitions/IVpc"
         }
     },
     "required": [
-        "region",
-        "userId",
-        "vpc"
+        "regions",
+        "userId"
     ],
     "type": "object"
 }

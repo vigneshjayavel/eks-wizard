@@ -3,18 +3,25 @@ import { App, TerraformStack, CloudBackend, NamedCloudWorkspace } from 'cdktf';
 import { AwsProvider } from '@cdktf/provider-aws/lib/provider';
 import { cloudServiceTree } from './lib/cloudServiceTreeParser';
 import { VpcStack } from './lib/vpcStack';
+import { IRegion } from './lib/CloudServiceTreeInterface';
+
+interface EksStackConfig {
+  region: IRegion;
+}
 
 class EksStack extends TerraformStack {
-  public vpc: VpcStack;
-  constructor(scope: Construct, id: string) {
+  // public vpc: VpcStack;
+  constructor(scope: Construct, id: string, config: EksStackConfig) {
     super(scope, id);
 
-    new AwsProvider(this, 'aws', { region: cloudServiceTree.region });
+    new AwsProvider(this, 'aws', { region: config.region.name });
 
-    this.vpc = new VpcStack(this, 'network', {
-      userId: cloudServiceTree.userId,
-      vpc: cloudServiceTree.vpc,
-      eks: cloudServiceTree.vpc.eks,
+    config.region.vpc.forEach((vpcItem) => {
+      new VpcStack(this, 'network', {
+        userId: cloudServiceTree.userId,
+        vpc: vpcItem,
+        eks: vpcItem.eks,
+      });
     });
   }
 }
@@ -164,17 +171,19 @@ class EksStack extends TerraformStack {
 // }
 
 const app = new App();
-const eksStack = new EksStack(app, 'eks-app');
 
+cloudServiceTree.regions.forEach((regionItem) => {
+  const eksStack = new EksStack(app, 'eks-app', { region: regionItem });
+  new CloudBackend(eksStack, {
+    hostname: 'app.terraform.io',
+    organization: 'fdervisi',
+    workspaces: new NamedCloudWorkspace('eks-app'),
+  });
+});
 // new KubernetesApplicationStack(
 //   app,
 //   'applications',
 //   eksStack.eks,
 //   eksStack.eksAuth
 // );
-new CloudBackend(eksStack, {
-  hostname: 'app.terraform.io',
-  organization: 'fdervisi',
-  workspaces: new NamedCloudWorkspace('eks-app'),
-});
 app.synth();

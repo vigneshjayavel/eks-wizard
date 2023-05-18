@@ -128,14 +128,14 @@ export class VpcStack extends Construct {
           Owner: config.userId,
         };
       }
-      const availabilityZoneIndex = i % this.allAvailabilityZones.length;
+
       const subnet = new Subnet(this, subnetItem.name, {
         vpcId: this.vpc.id,
         cidrBlock: subnetItem.cidrBlock,
         tags: tags,
         availabilityZone: Fn.element(
           this.allAvailabilityZones,
-          availabilityZoneIndex
+          subnetItem.availabilityZone
         ),
       });
 
