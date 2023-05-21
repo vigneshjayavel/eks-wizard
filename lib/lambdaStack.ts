@@ -1,12 +1,13 @@
 import { CloudwatchEventRule } from '@cdktf/provider-aws/lib/cloudwatch-event-rule';
 import { CloudwatchEventTarget } from '@cdktf/provider-aws/lib/cloudwatch-event-target';
 import { IamRole } from '@cdktf/provider-aws/lib/iam-role';
+// import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
 import { LambdaFunction } from '@cdktf/provider-aws/lib/lambda-function';
 import { LambdaPermission } from '@cdktf/provider-aws/lib/lambda-permission';
 import { Construct } from 'constructs';
 interface LambdaStackConfig {
-  privateDns: { ip?: string; hostname?: string }[];
-  vpcId: string;
+  targetIp: string;
+  s3BucketName: string;
   userId: string;
 }
 
@@ -14,7 +15,7 @@ export class LambdaStack extends Construct {
   constructor(scope: Construct, id: string, config: LambdaStackConfig) {
     super(scope, id);
 
-    const role = new IamRole(this, 'LambdaRole', {
+    const role = new IamRole(this, `lambda-role-${config.s3BucketName}`, {
       assumeRolePolicy: JSON.stringify({
         Version: '2012-10-17',
         Statement: [
@@ -30,19 +31,35 @@ export class LambdaStack extends Construct {
       }),
     });
 
+    // new IamRolePolicy(this, `lambda-s3-policy-${config.s3BucketName}`, {
+    //   name: 'LambdaS3Policy',
+    //   policy: JSON.stringify({
+    //     Version: '2012-10-17',
+    //     Statement: [
+    //       {
+    //         Effect: 'Allow',
+    //         Action: ['s3:PutObject', 's3:PutObjectAcl'],
+    //         Resource: `arn:aws:s3:::${config.s3BucketName}/*`,
+    //       },
+    //     ],
+    //   }),
+    //   role: role.id,
+    // });
+
     const lambda = new LambdaFunction(this, 'MongoBackupFunction', {
       functionName: 'mongoBackup',
-      handler: 'mongo_s3_backup.lambda_handler',
-      runtime: 'python3.8',
+      handler: 'index.handler', 
+      runtime: 'nodejs12.x',
       role: role.arn,
-      filename: 'path-to/mongo_s3_backup.zip', // Replace with the path to the zipped Python script
+      s3Bucket: config.s3BucketName,
+      s3Key: 'lambda-mongodb-s3-backup.zip',
       environment: {
         variables: {
-          BUCKET_NAME: 'bucket.bucket',
+          MONGO_URL: `mongodb://admin:admin@${config.targetIp}:27017/TodoApp`,
+          S3_PATH: `${config.s3BucketName}`, 
         },
       },
-
-      timeout: 300, // Timeout can be adjusted based on how long your backup might take
+      timeout: 30,
     });
 
     new LambdaPermission(this, 'LambdaPermission', {
@@ -53,7 +70,7 @@ export class LambdaStack extends Construct {
     });
 
     const schedule = new CloudwatchEventRule(this, 'Schedule', {
-      scheduleExpression: 'rate(1 day)', // Adjust backup frequency as needed
+      scheduleExpression: 'rate(1 day)',
     });
 
     new CloudwatchEventTarget(this, 'Target', {
@@ -62,5 +79,3 @@ export class LambdaStack extends Construct {
     });
   }
 }
-
-// main.ts

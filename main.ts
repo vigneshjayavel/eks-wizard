@@ -4,37 +4,41 @@ import { AwsProvider } from '@cdktf/provider-aws/lib/provider';
 import { cloudServiceTree } from './lib/cloudServiceTreeParser';
 import { VpcStack } from './lib/vpcStack';
 import { IRegion } from './lib/CloudServiceTreeInterface';
-//import { S3Bucket } from '@cdktf/provider-aws/lib/s3-bucket';
-// import { S3BucketPublicAccessBlock } from '@cdktf/provider-aws/lib/s3-bucket-public-access-block';
+import { S3Stack } from './lib/s3Stack';
+import { LambdaStack } from './lib/lambdaStack';
 
 interface EksStackConfig {
   region: IRegion;
 }
 
 class EksStack extends TerraformStack {
-  // public vpc: VpcStack;
+  private vpc!: VpcStack;
   constructor(scope: Construct, id: string, config: EksStackConfig) {
     super(scope, id);
 
     new AwsProvider(this, 'aws', { region: config.region.name });
 
+    if (config.region.s3) {
+      new S3Stack(this, `s3-${config.region.name}`, {
+        s3: config.region.s3,
+        userId: cloudServiceTree.userId,
+      });
+    }
+
     config.region.vpc.forEach((vpcItem) => {
-      new VpcStack(this, 'network', {
+      this.vpc = new VpcStack(this, `network`, {
         userId: cloudServiceTree.userId,
         vpc: vpcItem,
         eks: vpcItem.eks,
+        s3BucketName: config.region.s3.bucketName,
+      });
+
+      new LambdaStack(this, `lambda-stack-${config.region.name}`, {
+        s3BucketName: config.region.s3.bucketName,
+        targetIp: this.vpc.privateDns[0].ip || '1.1.1.1',
+        userId: cloudServiceTree.userId,
       });
     });
-
-    // new S3Bucket(this, 'bucket', { bucket: cloudServiceTree.s3.bucketName });
-
-    // new S3BucketPublicAccessBlock(this, 'block', {
-    //   blockPublicAcls: true,
-    //   blockPublicPolicy: true,
-    //   ignorePublicAcls: true,
-    //   restrictPublicBuckets: true,
-    //   bucket: cloudServiceTree.s3.bucketName,
-    // });
   }
 }
 

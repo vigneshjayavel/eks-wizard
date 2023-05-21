@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { Fn } from 'cdktf';
+import { Fn, TerraformOutput } from 'cdktf';
 import { IEks, IVpc } from './CloudServiceTreeInterface';
 import { Vpc } from '@cdktf/provider-aws/lib/vpc';
 import { dataAwsAvailabilityZones } from '@cdktf/provider-aws';
@@ -14,11 +14,13 @@ import { PrivateDnsZoneStack } from './privateDnsZoneStack';
 import { EksStack } from './eksStack';
 import { KubernetesApplicationStack } from './kubernetesApplicationStack';
 import { Route } from '@cdktf/provider-aws/lib/route';
+import { LambdaStack } from './lambdaStack';
 
 interface VpcStackConfig {
   vpc: IVpc;
   userId: string;
   eks?: IEks;
+  s3BucketName: string;
 }
 
 export class VpcStack extends Construct {
@@ -213,18 +215,36 @@ export class VpcStack extends Construct {
         vpcId: this.vpc.id,
       });
 
+      new TerraformOutput(this, 'eks-cluster-name', {
+        value: eksStack.eks.name,
+      });
+
+      new TerraformOutput(this, 'eks-cluster-endpoint', {
+        value: eksStack.eks.endpoint,
+      });
+
       if (config.eks.KubernetesApplication) {
-        new KubernetesApplicationStack(this, 'applications', {
-          cluster: eksStack.eks,
-          userId: config.userId,
-          clusterAuth: eksStack.eksAuth,
-        });
+        new KubernetesApplicationStack(
+          this,
+          `kubernete-applications-${config.vpc.name}$`,
+          {
+            cluster: eksStack.eks,
+            userId: config.userId,
+            clusterAuth: eksStack.eksAuth,
+          }
+        );
       }
     }
 
     new PrivateDnsZoneStack(this, `private-dns-zone-${config.vpc.name}$`, {
       vpcId: this.vpc.id,
       privateDns: this.privateDns,
+      userId: config.userId,
+    });
+
+    new LambdaStack(this, `lambda-stack-${config.vpc.name}`, {
+      s3BucketName: config.s3BucketName,
+      targetIp: '18.102.135.94',
       userId: config.userId,
     });
   }

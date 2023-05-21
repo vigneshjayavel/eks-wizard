@@ -1,8 +1,9 @@
 userId: fdervisi
-s3:
-  bucketName: fdervisi-mongodb-backup
 regions: 
   - name: eu-south-1
+    s3:
+      bucketName: fdervisi-mongodb-backup
+      blockPublicAccess: false
     vpc:
       - cidrBlock: 10.0.0.0/20
         name: vpc-eks-app
@@ -10,7 +11,7 @@ regions:
         eks:
           clusterName: eks-cluster
           version: "1.26"
-          KubernetesApplication: false
+          KubernetesApplication: true
           nodeGroup:
             instanceTypes: t3.small
             scalingConfig:

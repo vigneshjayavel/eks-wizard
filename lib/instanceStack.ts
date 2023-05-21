@@ -29,6 +29,9 @@ export class InstanceStack extends Construct {
       this.userData = fs.readFileSync(config.instance.userData, 'utf8');
     }
 
+    console.log("******* USERDATA ********")
+    console.log(this.userData)
+    console.log('******* USERDATA ********');
     this.securityGroup = new SecurityGroup(
       this,
       `securityGroup${config.instance.name}`,
@@ -57,7 +60,7 @@ export class InstanceStack extends Construct {
       // iamInstanceProfile:
       //   config.region.userId + '-' + config.instance.iamInstanceProfile ||
       //   undefined, // IAM instance profile to associate with the instance
-      userData: this.userData || undefined, // user data to pass to the instance
+      userData: this.userData, // user data to pass to the instance
       vpcSecurityGroupIds: [this.securityGroup.id],
     });
 

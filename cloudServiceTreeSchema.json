@@ -93,6 +93,9 @@
                 "name": {
                     "type": "string"
                 },
+                "s3": {
+                    "$ref": "#/definitions/IS3"
+                },
                 "vpc": {
                     "items": {
                         "$ref": "#/definitions/IVpc"
@@ -102,6 +105,7 @@
             },
             "required": [
                 "name",
+                "s3",
                 "vpc"
             ],
             "type": "object"
@@ -109,11 +113,16 @@
         "IS3": {
             "additionalProperties": false,
             "properties": {
+                "blockPublicAccess": {
+                    "default": true,
+                    "type": "boolean"
+                },
                 "bucketName": {
                     "type": "string"
                 }
             },
             "required": [
+                "blockPublicAccess",
                 "bucketName"
             ],
             "type": "object"
@@ -357,16 +366,12 @@
             },
             "type": "array"
         },
-        "s3": {
-            "$ref": "#/definitions/IS3"
-        },
         "userId": {
             "type": "string"
         }
     },
     "required": [
         "regions",
-        "s3",
         "userId"
     ],
     "type": "object"

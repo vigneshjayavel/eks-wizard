@@ -1,4 +1,4 @@
-import { TerraformStack } from 'cdktf';
+//import { TerraformStack } from 'cdktf';
 import { Construct } from 'constructs';
 import { Fn } from 'cdktf';
 import {
@@ -15,7 +15,7 @@ interface KubernetesApplicationStackConfig {
   userId: string;
 }
 
-export class KubernetesApplicationStack extends TerraformStack {
+export class KubernetesApplicationStack extends Construct {
   constructor(
     scope: Construct,
     id: string,
@@ -23,39 +23,29 @@ export class KubernetesApplicationStack extends TerraformStack {
   ) {
     super(scope, id);
 
-    config.cluster.name;
+    new k8s.KubernetesProvider(this, `kubernetes-provider-`, {
+      host: config.cluster.endpoint,
+      clusterCaCertificate: Fn.base64decode(
+        config.cluster.certificateAuthority.get(0).data
+      ),
+      token: config.clusterAuth.token,
+    });
 
-    new k8s.KubernetesProvider(
-      this,
-      `kubernetes-provider-${config.cluster.name}`,
-      {
-        host: config.cluster.endpoint,
-        clusterCaCertificate: Fn.base64decode(
-          config.cluster.certificateAuthority.get(0).data
-        ),
-        token: config.clusterAuth.token,
-      }
-    );
+    const mogoDbSecrete = new secret.Secret(this, `mongodb-secret-`, {
+      metadata: {
+        name: 'mongodb-secret',
+      },
 
-    const mogoDbSecrete = new secret.Secret(
-      this,
-      `mongodb-secret-${config.cluster.name}`,
-      {
-        metadata: {
-          name: 'mongodb-secret',
-        },
-
-        data: {
-          MONGODB_URI: Buffer.from(
-            'mongodb://admin:admin@mongodb.fdervisi.io:27017/TodoApp'
-          ).toString(),
-        },
-      }
-    );
+      data: {
+        MONGODB_URI: Buffer.from(
+          'mongodb://admin:admin@mongodb.fdervisi.io:27017/TodoApp'
+        ).toString(),
+      },
+    });
 
     const backendDeployment = new deployment.Deployment(
       this,
-      `backend-deployment-${config.cluster.name}`,
+      `backend-deployment-`,
       {
         metadata: {
           name: 'backend',
@@ -97,7 +87,7 @@ export class KubernetesApplicationStack extends TerraformStack {
       }
     );
 
-    new service.Service(this, `backend-service-${config.cluster.name}`, {
+    new service.Service(this, `backend-service-`, {
       metadata: {
         name: 'backend',
       },
@@ -116,7 +106,7 @@ export class KubernetesApplicationStack extends TerraformStack {
 
     const frontendDeployment = new deployment.Deployment(
       this,
-      `frontend-deployment-${config.cluster.name}`,
+      `frontend-deployment-`,
       {
         metadata: {
           name: 'frontend',
@@ -152,7 +142,7 @@ export class KubernetesApplicationStack extends TerraformStack {
       }
     );
 
-    new service.Service(this, `frontend-service-${config.cluster.name}`, {
+    new service.Service(this, `frontend-service-`, {
       metadata: {
         name: 'frontend',
       },

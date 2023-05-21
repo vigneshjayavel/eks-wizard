@@ -156,16 +156,21 @@ export interface IVpc {
 }
 
 export interface ICloudServiceTree {
-  s3: IS3;
+
   userId: string;
   regions: IRegion[];
 }
 
 export interface IS3 {
   bucketName: string;
+  /**
+   * @default true
+   */
+  blockPublicAccess: boolean;
 }
 
 export interface IRegion {
   name: string;
   vpc: IVpc[];
+  s3: IS3;
 }

@@ -19,6 +19,9 @@ sudo yum install -y mongodb-org
 # Update the MongoDB configuration file to listen on all interfaces
 sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' "/etc/mongod.conf"
 
+# Update the MongoDB configuration file to allow authorizationes
+sudo sed -i 's/#security:/security:\n  authorization: enabled/' /etc/mongod.conf 
+
 # Start MongoDB service
 sudo systemctl start mongod
 
@@ -30,7 +33,7 @@ mongo TodoApp --eval '
 db.createRole({
   role: "TodoAppAdmin",
   privileges: [
-    { resource: { db: "TodoApp", collection: "" }, actions: ["find", "insert", "update", "remove"] }
+    { resource: { db: "TodoApp", collection: "" }, actions: ["find", "insert", "update", "remove", "listCollections"] }
   ],
   roles: []
 })'
@@ -46,4 +49,13 @@ db.createUser({
   ]
 })'
 
+# Update the MongoDB configuration file to allow authorizationes
+sudo sed -i 's/#security:/security:\n  authorization: enabled/' /etc/mongod.conf 
 
+# Start MongoDB service
+sudo systemctl restart mongod
+
+
+# mongodump --host localhost --db TodoApp --out /home/centos/dump --authenticationDatabase TodoApp -u admin -p admin --verbose
+
+# mongodump -h 18.102.135.94:27017 -d TodoApp -u admin -p admin -o dump
