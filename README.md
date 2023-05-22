@@ -1,93 +1,33 @@
-# AWS EKS Infrastructure Deployment with CDKTF
+# Enhanced Cloud Management with CloudServiceTree
 
-This repository contains a TypeScript application that uses the [Cloud Development Kit for Terraform (CDKTF)](https://learn.hashicorp.com/tutorials/terraform/cdktf) to provision an Amazon Elastic Kubernetes Service (EKS) cluster along with its required infrastructure on AWS.
+CloudServiceTree represents a paradigm shift in cloud infrastructure management, emphasizing a no-code approach and robust modularity. This framework has been used to build an advanced three-tier web application on Amazon Web Services (AWS) as part of the Wiz SE Technical Exercise.
 
-## Overview
+## In-Depth Overview of the Framework and Deployment
 
-This application creates an EKS cluster along with the necessary supporting AWS resources, including:
+CloudServiceTree abstracts complex infrastructure code, enabling you to define your cloud environment via simple YAML configuration files. The configuration file in this exercise sets up a rich three-tier web application in AWS, which includes various AWS services like IAM, S3, VPC, EKS, and EC2, along with the deployment of MongoDB on an EC2 instance.
 
-- A VPC with subnets in three different availability zones.
-- An Internet Gateway and a NAT Gateway for internet connectivity.
-- A route table and associations for managing traffic between the subnets and the gateways.
-- A MongoDB instance running on an EC2 instance.
-- An EIP (Elastic IP) associated with the MongoDB instance and a Route53 private hosted zone for DNS.
-- IAM roles and policies for the EKS cluster and worker nodes.
-- An EKS node group which contains worker nodes running on EC2 instances.
+### Extensibility & Modularity
 
-The EKS cluster is made up of a control plane (managed by AWS) and worker nodes (EC2 instances in your AWS account).
+The modular design of CloudServiceTree makes it easy to manage individual services without needing to understand the entire infrastructure. This modular setup also aids in maintaining the codebase as services can be independently updated, scaled, or modified without disrupting the whole infrastructure. 
 
-## KubernetesApplicationStack
+Each YAML configuration file is an independent module, contributing to a particular aspect of the infrastructure, whether it be setting up an IAM role, defining a VPC, or deploying an EKS cluster. For instance, if you need to scale your deployment across multiple regions, you can simply replicate the desired modules in your new region-specific configuration file. This extensibility enables your infrastructure to grow with your needs without demanding additional scripting or manual work.
 
-The `KubernetesApplicationStack` class is used to deploy a Kubernetes application to the EKS cluster created earlier. It sets up the following resources:
+### Backend for GUI
 
-- A Kubernetes provider configured with the EKS cluster endpoint, CA certificate, and authentication token.
-- A secret for the MongoDB connection string, which is stored in the Kubernetes cluster as a secret resource.
-- A deployment for the backend application with one replica, using a container image from a Docker registry, and environment variables for the MongoDB connection string.
-- A service for the backend application, exposing it on port 3000.
-- A deployment for the frontend application with one replica, using a container image from a Docker registry.
-- A service for the frontend application, exposing it as a LoadBalancer service on port 3000.
+CloudServiceTree's approach makes it a suitable backend for a graphical user interface (GUI). By simply interacting with the GUI, users can modify the YAML configuration files to alter the infrastructure without needing to write or understand code. This not only brings convenience to the users but also enhances efficiency, particularly when scaling or adjusting the cloud environment to meet evolving requirements.
 
-The `KubernetesApplicationStack` class is then instantiated with the `EksStack` instance and the application is synthesized to generate the Terraform configuration files.
+## Value Proposition Over Traditional Terraform Deployment
 
-## Usage
+Compared to traditional infrastructure management using Terraform, CloudServiceTree offers several distinct advantages:
 
-To deploy the EKS infrastructure and the Kubernetes application, follow these steps:
+1. **No-Code Deployment**: While Terraform requires understanding and writing of HashiCorp Language (HCL), CloudServiceTree abstracts away the coding aspect. The YAML configuration files are human-readable and easy to manage without in-depth coding knowledge.
 
-1. Install the CDKTF CLI and other dependencies.
-2. Run `cdktf get` to download the necessary provider modules.
-3. Run `cdktf deploy` to deploy the infrastructure to your AWS account.
-4. Use the `kubectl` CLI to interact with your EKS cluster and verify that the application is running correctly.
+2. **Modular Architecture**: Although Terraform supports modularity, the real benefit of CloudServiceTree is its high-level, service-based modularity. This results in less code, clearer structure, and easier maintainability.
 
----
+3. **Streamlined Management**: Terraform requires separate state management and potential complexities arising from state file discrepancies. CloudServiceTree, in contrast, reduces the management overhead by handling state internally and transparently.
 
-This updated `README.md` now provides an explanation of the `KubernetesApplicationStack` class and the resources it creates within the EKS cluster.
+4. **Scalability**: With CloudServiceTree, scaling across multiple regions or adding new services is as simple as adding or duplicating configuration modules. In contrast, Terraform would require you to write additional code.
 
+5. **Integration with GUI**: Due to its no-code approach and clear structure, CloudServiceTree is well-suited to integration with a GUI for infrastructure management. This is not as straightforward with Terraform.
 
-
-## Install Terraform
-
-wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update && sudo apt install terraform
-
-
-## Create and initialize the project 
-https://developer.hashicorp.com/terraform/tutorials/cdktf/cdktf-install
-
-npm install --global cdktf-cli@latest
-mkdir eks-app
-cdktf init --template=typescript
-
-## Download AWS provider
-
-
-## install Modules
-
-in ```cdktf.json``` add **terraformModules**
-{
-  "language": "typescript",
-  "app": "npx ts-node main.ts",
-  "projectId": "36c31cb2-be41-4217-890f-02eea2057b10",
-  "sendCrashReports": "false",
-  "terraformProviders": [],
-  "terraformModules": [
-   "terraform-aws-modules/vpc/aws@ ~> 4.0",
-    "terraform-aws-modules/eks/aws@ ~> 19.13""
-  ],
-  "context": {
-    "excludeStackIdFromLogicalIds": "true",
-    "allowSepCharsInLogicalIds": "true"
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-typescript-json-schema --required --noExtraProps ./lib/CloudServiceTreeInterface.ts ICloudServiceTree > cloudServiceTreeSchema.json
+In conclusion, CloudServiceTree provides an accessible, scalable, and efficient way to manage cloud infrastructure. This exercise showcases the deployment of a complex three-tier web application using this advanced framework, underscoring the value and power of this next-generation approach to cloud management.
