@@ -8,13 +8,13 @@ import { IamRole } from '@cdktf/provider-aws/lib/iam-role';
 import { IIamRole } from './CloudServiceTreeInterface';
 import { IamInstanceProfile } from '@cdktf/provider-aws/lib/iam-instance-profile';
 
-interface AwsIamStackConfig {
+interface IamStackConfig {
   iamRole: IIamRole;
   userId: string;
 }
 
-export class AwsIamStack extends TerraformStack {
-  constructor(scope: Construct, id: string, config: AwsIamStackConfig) {
+export class IamStack extends TerraformStack {
+  constructor(scope: Construct, id: string, config: IamStackConfig) {
     super(scope, id);
     new AwsProvider(this, 'AWS', { region: 'us-east-1' });
 
@@ -26,14 +26,14 @@ export class AwsIamStack extends TerraformStack {
         );
         const iamRole = new IamRole(this, `${config.userId}-${key}`, {
           assumeRolePolicy: assumeRolePolicy,
-          name: `${config.userId}-${key}`,
+          name: `${key}`,
         });
 
         new IamInstanceProfile(
           this,
           `${config.userId}-${key}-iam-instance-profile`,
           {
-            name: `${config.userId}-${key}`,
+            name: `${key}`,
             role: iamRole.name,
           }
         );
@@ -48,7 +48,7 @@ export class AwsIamStack extends TerraformStack {
               this,
               `${config.userId}-${key}-iam-policy${index}`,
               {
-                name: `${config.userId}-${key}-iam-policy${index}`,
+                name: `${key}-iam-policy${index}`,
                 policy: iamPolicyDocumentJson,
               }
             );
@@ -57,7 +57,7 @@ export class AwsIamStack extends TerraformStack {
               `${config.userId}-${key}-iam-policy-attachment-json${index}`,
               {
                 policyArn: iamPolicy.arn,
-                name: `${config.userId}-${key}-iam-policy-attachment-json${index}`,
+                name: `${key}-iam-policy-attachment-json${index}`,
                 roles: [iamRole.id],
               }
             );
@@ -70,7 +70,7 @@ export class AwsIamStack extends TerraformStack {
             `${config.userId}-${key}-iam-policy-attachment-arn${index}`,
             {
               policyArn: `arn:aws:iam::aws:policy/${policyArn}`,
-              name: `${config.userId}-${key}-iam-policy-attachment-arn${index}`,
+              name: `${key}-iam-policy-attachment-arn${index}`,
               roles: [iamRole.id],
             }
           );

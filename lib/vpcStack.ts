@@ -14,7 +14,6 @@ import { PrivateDnsZoneStack } from './privateDnsZoneStack';
 import { EksStack } from './eksStack';
 import { KubernetesApplicationStack } from './kubernetesApplicationStack';
 import { Route } from '@cdktf/provider-aws/lib/route';
-import { LambdaStack } from './lambdaStack';
 
 interface VpcStackConfig {
   vpc: IVpc;
@@ -242,10 +241,6 @@ export class VpcStack extends Construct {
       userId: config.userId,
     });
 
-    new LambdaStack(this, `lambda-stack-${config.vpc.name}`, {
-      s3BucketName: config.s3BucketName,
-      targetIp: '18.102.135.94',
-      userId: config.userId,
-    });
+
   }
 }

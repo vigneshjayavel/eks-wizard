@@ -1,6 +1,12 @@
+iamRole:
+  mongoDbInstanceRole:
+    - assumeRolePolicy: instance_assume_role_policy.json
+      iamPolicyTemplateJson:
+        - ec2_all.json
 userId: fdervisi
 regions: 
   - name: eu-south-1
+    lamdaS3Bucket: fdervisi-repro-bucket
     s3:
       bucketName: fdervisi-mongodb-backup
       blockPublicAccess: false
@@ -46,6 +52,7 @@ regions:
                 associatePublicIpAddress: true
                 eip: true
                 privatDnsHostName: mongodb
+                iamInstanceProfile: mongoDbInstanceRole
                 userData: userdata.sh
                 keyName: Key_MBP_fdervisi
                 securityGroup:

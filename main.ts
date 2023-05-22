@@ -6,6 +6,7 @@ import { VpcStack } from './lib/vpcStack';
 import { IRegion } from './lib/CloudServiceTreeInterface';
 import { S3Stack } from './lib/s3Stack';
 import { LambdaStack } from './lib/lambdaStack';
+import { IamStack } from './lib/iamStack';
 
 interface EksStackConfig {
   region: IRegion;
@@ -33,16 +34,26 @@ class EksStack extends TerraformStack {
         s3BucketName: config.region.s3.bucketName,
       });
 
-      new LambdaStack(this, `lambda-stack-${config.region.name}`, {
-        s3BucketName: config.region.s3.bucketName,
-        targetIp: this.vpc.privateDns[0].ip || '1.1.1.1',
-        userId: cloudServiceTree.userId,
-      });
+      if (config.region.lamdaS3Bucket) {
+        new LambdaStack(this, `lambda-stack-${config.region.name}`, {
+          s3BucketName: config.region.s3.bucketName,
+          lamdaS3Bucket: config.region.lamdaS3Bucket,
+          targetIp: this.vpc.privateDns[0].ip || '1.1.1.1',
+          userId: cloudServiceTree.userId,
+        });
+      }
     });
   }
 }
 
 const app = new App();
+
+if (cloudServiceTree.iamRole) {
+  new IamStack(app, `iamstack`, {
+    iamRole: cloudServiceTree.iamRole,
+    userId: cloudServiceTree.userId,
+  });
+}
 
 cloudServiceTree.regions.forEach((regionItem) => {
   const eksStack = new EksStack(app, 'eks-app', { region: regionItem });

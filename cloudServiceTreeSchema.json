@@ -27,6 +27,41 @@
             ],
             "type": "object"
         },
+        "IIamPolicy": {
+            "additionalProperties": false,
+            "properties": {
+                "assumeRolePolicy": {
+                    "default": "eu-central-1",
+                    "description": "name of the AWS region | type(string)",
+                    "type": "string"
+                },
+                "iamPolicyTemplateJson": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "policyArn": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "assumeRolePolicy"
+            ],
+            "type": "object"
+        },
+        "IIamRole": {
+            "additionalProperties": {
+                "items": {
+                    "$ref": "#/definitions/IIamPolicy"
+                },
+                "type": "array"
+            },
+            "type": "object"
+        },
         "IInstance": {
             "additionalProperties": false,
             "properties": {
@@ -38,6 +73,9 @@
                 },
                 "eip": {
                     "type": "boolean"
+                },
+                "iamInstanceProfile": {
+                    "type": "string"
                 },
                 "instanceType": {
                     "type": "string"
@@ -62,6 +100,7 @@
                 "ami",
                 "associatePublicIpAddress",
                 "eip",
+                "iamInstanceProfile",
                 "instanceType",
                 "keyName",
                 "name",
@@ -90,6 +129,9 @@
         "IRegion": {
             "additionalProperties": false,
             "properties": {
+                "lamdaS3Bucket": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -360,6 +402,9 @@
         }
     },
     "properties": {
+        "iamRole": {
+            "$ref": "#/definitions/IIamRole"
+        },
         "regions": {
             "items": {
                 "$ref": "#/definitions/IRegion"

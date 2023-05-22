@@ -50,6 +50,7 @@ export class InstanceStack extends Construct {
       ami: config.instance.ami,
       instanceType: config.instance.instanceType,
       subnetId: config.subnetId,
+      iamInstanceProfile: config.instance.iamInstanceProfile || undefined,
       tags: {
         Name: `${config.instance.name}`,
         Owner: config.userId,

@@ -133,6 +133,7 @@ export interface IInstance {
   privatDnsHostName: string;
   keyName: string;
   securityGroup: ISecurityGroup;
+  iamInstanceProfile: string;
 }
 
 export interface ISubnets {
@@ -156,9 +157,9 @@ export interface IVpc {
 }
 
 export interface ICloudServiceTree {
-
   userId: string;
   regions: IRegion[];
+  iamRole?: IIamRole;
 }
 
 export interface IS3 {
@@ -173,4 +174,24 @@ export interface IRegion {
   name: string;
   vpc: IVpc[];
   s3: IS3;
+  lamdaS3Bucket?: string;
+}
+
+
+export interface IIamRole {
+  /**
+   * name of the AWS region | type(string)
+   * @default eu-central-1
+   */
+  [key: string]: IIamPolicy[];
+}
+
+export interface IIamPolicy {
+  /**
+   * name of the AWS region | type(string)
+   * @default eu-central-1
+   */
+  assumeRolePolicy: string;
+  policyArn?: string[];
+  iamPolicyTemplateJson?: string[];
 }

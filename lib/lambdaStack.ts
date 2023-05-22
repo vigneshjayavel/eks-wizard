@@ -1,7 +1,7 @@
 import { CloudwatchEventRule } from '@cdktf/provider-aws/lib/cloudwatch-event-rule';
 import { CloudwatchEventTarget } from '@cdktf/provider-aws/lib/cloudwatch-event-target';
 import { IamRole } from '@cdktf/provider-aws/lib/iam-role';
-// import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
+import { IamRolePolicy } from '@cdktf/provider-aws/lib/iam-role-policy';
 import { LambdaFunction } from '@cdktf/provider-aws/lib/lambda-function';
 import { LambdaPermission } from '@cdktf/provider-aws/lib/lambda-permission';
 import { Construct } from 'constructs';
@@ -9,6 +9,7 @@ interface LambdaStackConfig {
   targetIp: string;
   s3BucketName: string;
   userId: string;
+  lamdaS3Bucket: string;
 }
 
 export class LambdaStack extends Construct {
@@ -31,32 +32,32 @@ export class LambdaStack extends Construct {
       }),
     });
 
-    // new IamRolePolicy(this, `lambda-s3-policy-${config.s3BucketName}`, {
-    //   name: 'LambdaS3Policy',
-    //   policy: JSON.stringify({
-    //     Version: '2012-10-17',
-    //     Statement: [
-    //       {
-    //         Effect: 'Allow',
-    //         Action: ['s3:PutObject', 's3:PutObjectAcl'],
-    //         Resource: `arn:aws:s3:::${config.s3BucketName}/*`,
-    //       },
-    //     ],
-    //   }),
-    //   role: role.id,
-    // });
+    new IamRolePolicy(this, `lambda-s3-policy-${config.s3BucketName}`, {
+      name: 'LambdaS3Policy',
+      policy: JSON.stringify({
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Action: ['s3:PutObject', 's3:PutObjectAcl'],
+            Resource: `arn:aws:s3:::${config.s3BucketName}/*`,
+          },
+        ],
+      }),
+      role: role.id,
+    });
 
     const lambda = new LambdaFunction(this, 'MongoBackupFunction', {
       functionName: 'mongoBackup',
-      handler: 'index.handler', 
+      handler: 'index.handler',
       runtime: 'nodejs12.x',
       role: role.arn,
-      s3Bucket: config.s3BucketName,
+      s3Bucket: config.lamdaS3Bucket,
       s3Key: 'lambda-mongodb-s3-backup.zip',
       environment: {
         variables: {
           MONGO_URL: `mongodb://admin:admin@${config.targetIp}:27017/TodoApp`,
-          S3_PATH: `${config.s3BucketName}`, 
+          S3_PATH: `${config.s3BucketName}`,
         },
       },
       timeout: 30,
