@@ -1,3 +1,4 @@
+// Import all the necessary classes from the AWS CDKTF and Constructs libraries.
 import { EksCluster } from '@cdktf/provider-aws/lib/eks-cluster';
 import { EksNodeGroup } from '@cdktf/provider-aws/lib/eks-node-group';
 import { dataAwsEksCluster, dataAwsEksClusterAuth } from '@cdktf/provider-aws';
@@ -7,6 +8,8 @@ import { IamRolePolicyAttachment } from '@cdktf/provider-aws/lib/iam-role-policy
 import { TerraformOutput } from 'cdktf';
 import { Construct } from 'constructs';
 import { IEks } from './CloudServiceTreeInterface';
+
+// Define the structure of the configuration needed to set up the EKS stack.
 interface EksStackConfig {
   vpcId: string;
   userId: string;
@@ -14,16 +17,20 @@ interface EksStackConfig {
   subnetIds: string[];
 }
 
+// Define the main class, EksStack, which extends the Construct class from the Constructs library.
 export class EksStack extends Construct {
   public eks: dataAwsEksCluster.DataAwsEksCluster;
   public eksAuth: dataAwsEksClusterAuth.DataAwsEksClusterAuth;
+
   constructor(scope: Construct, id: string, config: EksStackConfig) {
     super(scope, id);
 
+    // Create the IAM role that will be used by the EKS cluster.
     const eksRole = new IamRole(
       this,
       `iam-eks-role-${config.eks.clusterName}`,
       {
+        // AssumeRole policy allows the EKS service to assume this role.
         assumeRolePolicy: JSON.stringify({
           Version: '2012-10-17',
           Statement: [
@@ -39,6 +46,7 @@ export class EksStack extends Construct {
       }
     );
 
+    // Attach the necessary policies to the EKS role.
     new IamRolePolicyAttachment(
       this,
       `iam-eks-policy-attachment-1-${config.eks.clusterName}`,
@@ -57,6 +65,7 @@ export class EksStack extends Construct {
       }
     );
 
+    // Define custom policies for the EKS cluster's role.
     new IamRolePolicy(
       this,
       `iam-eks-node-group-policy-${config.eks.clusterName}`,
@@ -97,6 +106,7 @@ export class EksStack extends Construct {
       }
     );
 
+    // Define the EKS cluster using the configurations provided.
     const cluster = new EksCluster(
       this,
       `eks-cluster-${config.eks.clusterName}`,
@@ -113,6 +123,7 @@ export class EksStack extends Construct {
       }
     );
 
+    // Create an IAM role for the EKS node group.
     const nodeGroupRole = new IamRole(
       this,
       `iam-eks-node-group-role-${config.eks.clusterName}`,
@@ -130,6 +141,7 @@ export class EksStack extends Construct {
       }
     );
 
+    // Attach necessary policies to the EKS node group role.
     new IamRolePolicyAttachment(
       this,
       `iam-eks-node-group-policy-attachment-1-${config.eks.clusterName}`,
@@ -166,6 +178,7 @@ export class EksStack extends Construct {
       }
     );
 
+    // Define the EKS node group with the configurations provided.
     new EksNodeGroup(this, `eks-node-group-${config.eks.clusterName}`, {
       clusterName: cluster.name,
       nodeGroupName: `eks-node-group-${config.eks.clusterName}`,
@@ -182,7 +195,7 @@ export class EksStack extends Construct {
       },
     });
 
-    // We create the Eks cluster within the module, this is so we can access the cluster resource afterwards
+    // Fetch the details of the created EKS cluster for further use.
     this.eks = new dataAwsEksCluster.DataAwsEksCluster(
       this,
       'data-eks-cluster',
@@ -191,7 +204,7 @@ export class EksStack extends Construct {
       }
     );
 
-    // We need to fetch the authentication data from the EKS cluster as well
+    // Fetch the auth details of the created EKS cluster for further use.
     this.eksAuth = new dataAwsEksClusterAuth.DataAwsEksClusterAuth(
       this,
       'data-eks-auth',
@@ -200,7 +213,7 @@ export class EksStack extends Construct {
       }
     );
 
-    // Add this after creating the EKS cluster
+    // Output the name of the EKS cluster. This can be used to reference the cluster in other Terraform configurations.
     new TerraformOutput(this, 'eks-cluster-name', {
       value: cluster.name,
     });

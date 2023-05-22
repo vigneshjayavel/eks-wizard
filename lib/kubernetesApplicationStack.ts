@@ -1,4 +1,3 @@
-//import { TerraformStack } from 'cdktf';
 import { Construct } from 'constructs';
 import { Fn } from 'cdktf';
 import {
@@ -9,12 +8,14 @@ import {
 } from '@cdktf/provider-kubernetes/';
 import { dataAwsEksCluster, dataAwsEksClusterAuth } from '@cdktf/provider-aws';
 
+// Define an interface for Kubernetes Application Stack configurations
 interface KubernetesApplicationStackConfig {
   cluster: dataAwsEksCluster.DataAwsEksCluster;
   clusterAuth: dataAwsEksClusterAuth.DataAwsEksClusterAuth;
   userId: string;
 }
 
+// Define a class for Kubernetes Application Stack
 export class KubernetesApplicationStack extends Construct {
   constructor(
     scope: Construct,
@@ -23,6 +24,7 @@ export class KubernetesApplicationStack extends Construct {
   ) {
     super(scope, id);
 
+    // Set up the Kubernetes provider with the EKS cluster details from the config
     new k8s.KubernetesProvider(this, `kubernetes-provider-`, {
       host: config.cluster.endpoint,
       clusterCaCertificate: Fn.base64decode(
@@ -31,11 +33,11 @@ export class KubernetesApplicationStack extends Construct {
       token: config.clusterAuth.token,
     });
 
+    // Create a new Kubernetes secret to store the MongoDB connection string
     const mogoDbSecrete = new secret.Secret(this, `mongodb-secret-`, {
       metadata: {
         name: 'mongodb-secret',
       },
-
       data: {
         MONGODB_URI: Buffer.from(
           'mongodb://admin:admin@mongodb.fdervisi.io:27017/TodoApp'
@@ -43,6 +45,7 @@ export class KubernetesApplicationStack extends Construct {
       },
     });
 
+    // Create a new Kubernetes deployment for the backend
     const backendDeployment = new deployment.Deployment(
       this,
       `backend-deployment-`,
@@ -87,6 +90,7 @@ export class KubernetesApplicationStack extends Construct {
       }
     );
 
+    // Create a new Kubernetes service for the backend
     new service.Service(this, `backend-service-`, {
       metadata: {
         name: 'backend',
@@ -104,6 +108,7 @@ export class KubernetesApplicationStack extends Construct {
       },
     });
 
+    // Create a new Kubernetes deployment for the frontend
     const frontendDeployment = new deployment.Deployment(
       this,
       `frontend-deployment-`,
@@ -142,6 +147,7 @@ export class KubernetesApplicationStack extends Construct {
       }
     );
 
+    // Create a new Kubernetes service for the frontend
     new service.Service(this, `frontend-service-`, {
       metadata: {
         name: 'frontend',

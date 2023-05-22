@@ -237,10 +237,9 @@ export class VpcStack extends Construct {
 
     new PrivateDnsZoneStack(this, `private-dns-zone-${config.vpc.name}$`, {
       vpcId: this.vpc.id,
+      zoneDomainName: config.vpc.privateHostedZone,
       privateDns: this.privateDns,
       userId: config.userId,
     });
-
-
   }
 }
