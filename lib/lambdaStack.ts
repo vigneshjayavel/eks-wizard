@@ -57,7 +57,7 @@ export class LambdaStack extends Construct {
     const lambda = new LambdaFunction(this, 'MongoBackupFunction', {
       functionName: 'mongoBackup',
       handler: 'index.handler',
-      runtime: 'nodejs12.x',
+      runtime: 'nodejs18.x',
       role: role.arn,
       s3Bucket: config.lamdaS3Bucket,
       s3Key: 'lambda-mongodb-s3-backup.zip',
