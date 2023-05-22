@@ -54,8 +54,3 @@ sudo sed -i 's/#security:/security:\n  authorization: enabled/' /etc/mongod.conf
 
 # Start MongoDB service
 sudo systemctl restart mongod
-
-
-# mongodump --host localhost --db TodoApp --out /home/centos/dump --authenticationDatabase TodoApp -u admin -p admin --verbose
-
-# mongodump -h 18.102.135.94:27017 -d TodoApp -u admin -p admin -o dump
