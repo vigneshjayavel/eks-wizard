@@ -4,18 +4,23 @@
     "definitions": {
         "IEks": {
             "additionalProperties": false,
+            "description": "IEks represents the configuration for an Amazon EKS (Elastic Kubernetes Service) cluster.",
             "properties": {
                 "KubernetesApplication": {
                     "default": false,
+                    "description": "Whether to create a Kubernetes application or not.",
                     "type": "boolean"
                 },
                 "clusterName": {
+                    "description": "Name of the EKS cluster.",
                     "type": "string"
                 },
                 "nodeGroup": {
-                    "$ref": "#/definitions/INodeGroup"
+                    "$ref": "#/definitions/INodeGroup",
+                    "description": "The Node Group configuration."
                 },
                 "version": {
+                    "description": "Kubernetes version to use for the EKS cluster.",
                     "type": "string"
                 }
             },
@@ -29,19 +34,21 @@
         },
         "IIamPolicy": {
             "additionalProperties": false,
+            "description": "IIamPolicy represents an AWS IAM Policy configuration.",
             "properties": {
                 "assumeRolePolicy": {
-                    "default": "eu-central-1",
-                    "description": "name of the AWS region | type(string)",
+                    "description": "The policy that determines who is allowed to assume the IAM role.",
                     "type": "string"
                 },
                 "iamPolicyTemplateJson": {
+                    "description": "Optional IAM policy templates in JSON format to attach to the role.",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
                 },
                 "policyArn": {
+                    "description": "The ARNs of the managed IAM policies to attach to the role.",
                     "items": {
                         "type": "string"
                     },
@@ -60,39 +67,51 @@
                 },
                 "type": "array"
             },
+            "description": "IIamRole represents an AWS IAM Role configuration.",
             "type": "object"
         },
         "IInstance": {
             "additionalProperties": false,
+            "description": "IInstance represents an Amazon EC2 instance configuration.",
             "properties": {
                 "ami": {
+                    "description": "The Amazon Machine Image (AMI) ID of the instance.",
                     "type": "string"
                 },
                 "associatePublicIpAddress": {
+                    "description": "Whether to associate a public IP address with an instance in a VPC.",
                     "type": "boolean"
                 },
                 "eip": {
+                    "description": "Whether to enable Elastic IP (EIP).",
                     "type": "boolean"
                 },
                 "iamInstanceProfile": {
+                    "description": "The name of the IAM instance profile associated with the instance.",
                     "type": "string"
                 },
                 "instanceType": {
+                    "description": "The type of the instance.",
                     "type": "string"
                 },
                 "keyName": {
+                    "description": "The name of the key pair.",
                     "type": "string"
                 },
                 "name": {
+                    "description": "The name of the instance.",
                     "type": "string"
                 },
                 "privatDnsHostName": {
+                    "description": "The private DNS host name of the instance.",
                     "type": "string"
                 },
                 "securityGroup": {
-                    "$ref": "#/definitions/ISecurityGroup"
+                    "$ref": "#/definitions/ISecurityGroup",
+                    "description": "The security group configuration."
                 },
                 "userData": {
+                    "description": "The user data to provide when launching the instance.",
                     "type": "string"
                 }
             },
@@ -112,12 +131,15 @@
         },
         "INodeGroup": {
             "additionalProperties": false,
+            "description": "INodeGroup represents an Amazon EKS Node Group, which is a group of worker nodes.",
             "properties": {
                 "instanceTypes": {
+                    "description": "The types of Amazon EC2 instances to use.",
                     "type": "string"
                 },
                 "scalingConfig": {
-                    "$ref": "#/definitions/IScalingConfig"
+                    "$ref": "#/definitions/IScalingConfig",
+                    "description": "Scaling configuration of the Node Group."
                 }
             },
             "required": [
@@ -128,17 +150,22 @@
         },
         "IRegion": {
             "additionalProperties": false,
+            "description": "IRegion represents a geographical region in which cloud services are deployed.",
             "properties": {
                 "lamdaS3Bucket": {
+                    "description": "Optional AWS Lambda S3 bucket in the region.",
                     "type": "string"
                 },
                 "name": {
+                    "description": "The name of the region.",
                     "type": "string"
                 },
                 "s3": {
-                    "$ref": "#/definitions/IS3"
+                    "$ref": "#/definitions/IS3",
+                    "description": "The S3 buckets in the region."
                 },
                 "vpc": {
+                    "description": "The VPCs deployed in the region.",
                     "items": {
                         "$ref": "#/definitions/IVpc"
                     },
@@ -154,12 +181,15 @@
         },
         "IS3": {
             "additionalProperties": false,
+            "description": "IS3 represents an Amazon S3 bucket configuration.",
             "properties": {
                 "blockPublicAccess": {
                     "default": true,
+                    "description": "Whether to block public access to the S3 bucket.",
                     "type": "boolean"
                 },
                 "bucketName": {
+                    "description": "The name of the S3 bucket.",
                     "type": "string"
                 }
             },
@@ -171,14 +201,18 @@
         },
         "IScalingConfig": {
             "additionalProperties": false,
+            "description": "IScalingConfig represents the desired, maximum, and minimum size for an AWS Autoscaling Group.",
             "properties": {
                 "desiredSize": {
+                    "description": "The number of EC2 instances that should be running in the group.",
                     "type": "number"
                 },
                 "maxSize": {
+                    "description": "The maximum size of the Autoscaling Group.",
                     "type": "number"
                 },
                 "minSize": {
+                    "description": "The minimum size of the Autoscaling Group.",
                     "type": "number"
                 }
             },
@@ -191,45 +225,47 @@
         },
         "ISecurityGroup": {
             "additionalProperties": false,
+            "description": "ISecurityGroup represents the configuration of an AWS Security Group.",
             "properties": {
                 "description": {
+                    "description": "Description of the security group.",
                     "type": "string"
                 },
                 "egress": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#egress SecurityGroup#egress}",
+                    "description": "The egress rules.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#egress SecurityGroup#egress}",
                     "items": {
                         "$ref": "#/definitions/ISecurityGroupEgress"
                     },
                     "type": "array"
                 },
                 "ingress": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ingress SecurityGroup#ingress}",
+                    "description": "The ingress rules.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ingress SecurityGroup#ingress}",
                     "items": {
                         "$ref": "#/definitions/ISecurityGroupIngress"
                     },
                     "type": "array"
                 },
                 "name": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#name SecurityGroup#name}",
+                    "description": "Name of the security group.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#name SecurityGroup#name}",
                     "type": "string"
                 },
                 "namePrefix": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#name_prefix SecurityGroup#name_prefix}",
+                    "description": "Creates a unique name beginning with the specified prefix.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#name_prefix SecurityGroup#name_prefix}",
                     "type": "string"
                 },
                 "revokeRulesOnDelete": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#revoke_rules_on_delete SecurityGroup#revoke_rules_on_delete}",
+                    "description": "Instruct this module to revoke all of the security groups attached to the security group when destroying the security group.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#revoke_rules_on_delete SecurityGroup#revoke_rules_on_delete}",
                     "type": "boolean"
                 },
                 "tags": {
                     "additionalProperties": {
                         "type": "string"
                     },
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#tags SecurityGroup#tags}",
+                    "description": "Metadata to assign to the security group.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#tags SecurityGroup#tags}",
                     "type": "object"
                 },
                 "vpcId": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#vpc_id SecurityGroup#vpc_id}",
+                    "description": "The ID of the VPC.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#vpc_id SecurityGroup#vpc_id}",
                     "type": "string"
                 }
             },
@@ -237,6 +273,7 @@
         },
         "ISecurityGroupEgress": {
             "additionalProperties": false,
+            "description": "ISecurityGroupEgress represents the configuration for egress rules of a security group.",
             "properties": {
                 "cidrBlocks": {
                     "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#cidr_blocks SecurityGroup#cidr_blocks}",
@@ -246,40 +283,40 @@
                     "type": "array"
                 },
                 "description": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#description SecurityGroup#description}",
+                    "description": "Description of the security group.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#description SecurityGroup#description}",
                     "type": "string"
                 },
                 "fromPort": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#from_port SecurityGroup#from_port}",
+                    "description": "The starting range of the port for the TCP and UDP protocols, or an ICMP/ICMPv6 type number.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#from_port SecurityGroup#from_port}",
                     "type": "number"
                 },
                 "ipv6CidrBlocks": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ipv6_cidr_blocks SecurityGroup#ipv6_cidr_blocks}",
+                    "description": "The IPv6 CIDR block.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ipv6_cidr_blocks SecurityGroup#ipv6_cidr_blocks}",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
                 },
                 "prefixListIds": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#prefix_list_ids SecurityGroup#prefix_list_ids}",
+                    "description": "The ID of the prefix list for an AWS service.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#prefix}",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
                 },
                 "protocol": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#protocol SecurityGroup#protocol}",
+                    "description": "The protocol (tcp, udp, icmp, icmpv6, all).\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#protocol SecurityGroup#protocol}",
                     "type": "string"
                 },
                 "securityGroups": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#security_groups SecurityGroup#security_groups}",
+                    "description": "The IDs of the security groups.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#security_groups SecurityGroup#security_groups}",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
                 },
                 "toPort": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#to_port SecurityGroup#to_port}",
+                    "description": "The ending range of the port for the TCP and UDP protocols, or an ICMP/ICMPv6 code.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#to_port SecurityGroup#to_port}",
                     "type": "number"
                 }
             },
@@ -287,6 +324,7 @@
         },
         "ISecurityGroupIngress": {
             "additionalProperties": false,
+            "description": "ISecurityGroupIngress represents the configuration for ingress rules of a security group.",
             "properties": {
                 "cidrBlocks": {
                     "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#cidr_blocks SecurityGroup#cidr_blocks}",
@@ -296,40 +334,40 @@
                     "type": "array"
                 },
                 "description": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#description SecurityGroup#description}",
+                    "description": "Description of the security group.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#description SecurityGroup#description}",
                     "type": "string"
                 },
                 "fromPort": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#from_port SecurityGroup#from_port}",
+                    "description": "The starting range of the port for the TCP and UDP protocols, or an ICMP/ICMPv6 type number.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#from_port SecurityGroup#from_port}",
                     "type": "number"
                 },
                 "ipv6CidrBlocks": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ipv6_cidr_blocks SecurityGroup#ipv6_cidr_blocks}",
+                    "description": "The IPv6 CIDR block.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#ipv6_cidr_blocks SecurityGroup#ipv6_cidr_blocks}",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
                 },
                 "prefixListIds": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#prefix_list_ids SecurityGroup#prefix_list_ids}",
+                    "description": "The ID of the prefix list for an AWS service.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#prefix_list_ids SecurityGroup#prefix_list_ids}",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
                 },
                 "protocol": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#protocol SecurityGroup#protocol}",
+                    "description": "The protocol (tcp, udp, icmp, icmpv6, all).\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#protocol SecurityGroup#protocol}",
                     "type": "string"
                 },
                 "securityGroups": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#security_groups SecurityGroup#security_groups}",
+                    "description": "The IDs of the security groups.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#security_groups SecurityGroup#security_groups}",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
                 },
                 "toPort": {
-                    "description": "Docs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#to_port SecurityGroup#to_port}",
+                    "description": "The ending range of the port for the TCP and UDP protocols, or an ICMP/ICMPv6 code.\nDocs at Terraform Registry: {@link https://www.terraform.io/docs/providers/aws/r/security_group#to_port SecurityGroup#to_port}",
                     "type": "number"
                 }
             },
@@ -337,27 +375,33 @@
         },
         "ISubnets": {
             "additionalProperties": false,
+            "description": "ISubnets represents a subnet configuration in Amazon VPC (Virtual Private Cloud).",
             "properties": {
                 "availabilityZone": {
-                    "default": 0,
+                    "description": "The availability zone where the subnet will be placed. Default is 0.",
                     "type": "number"
                 },
                 "cidrBlock": {
+                    "description": "The CIDR block for the subnet.",
                     "type": "string"
                 },
                 "eks": {
+                    "description": "Whether to create an Amazon EKS for the subnet.",
                     "type": "boolean"
                 },
                 "instance": {
+                    "description": "List of instances in the subnet.",
                     "items": {
                         "$ref": "#/definitions/IInstance"
                     },
                     "type": "array"
                 },
                 "name": {
+                    "description": "The name of the subnet.",
                     "type": "string"
                 },
                 "public": {
+                    "description": "Whether the subnet is public or private.",
                     "type": "boolean"
                 }
             },
@@ -372,20 +416,26 @@
         },
         "IVpc": {
             "additionalProperties": false,
+            "description": "IVpc represents a Virtual Private Cloud (VPC) configuration on AWS.",
             "properties": {
                 "cidrBlock": {
+                    "description": "The CIDR block for the VPC.",
                     "type": "string"
                 },
                 "eks": {
-                    "$ref": "#/definitions/IEks"
+                    "$ref": "#/definitions/IEks",
+                    "description": "Optional EKS cluster in the VPC."
                 },
                 "name": {
+                    "description": "The name of the VPC.",
                     "type": "string"
                 },
                 "privateHostedZone": {
+                    "description": "The private hosted zone in the VPC.",
                     "type": "string"
                 },
                 "subnets": {
+                    "description": "Subnets within the VPC.",
                     "items": {
                         "$ref": "#/definitions/ISubnets"
                     },
@@ -401,17 +451,21 @@
             "type": "object"
         }
     },
+    "description": "ICloudServiceTree represents the overall structure of cloud services set up for a user.",
     "properties": {
         "iamRole": {
-            "$ref": "#/definitions/IIamRole"
+            "$ref": "#/definitions/IIamRole",
+            "description": "The IAM Role associated with the services."
         },
         "regions": {
+            "description": "The regions in which the cloud services are deployed.",
             "items": {
                 "$ref": "#/definitions/IRegion"
             },
             "type": "array"
         },
         "userId": {
+            "description": "User ID of the owner of the cloud services.",
             "type": "string"
         }
     },

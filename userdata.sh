@@ -28,29 +28,18 @@ sudo systemctl start mongod
 # Enable MongoDB service to start on boot
 sudo systemctl enable mongod
 
-# Create a new MongoDB role with specified privileges
-mongo TodoApp --eval '
-db.createRole({
-  role: "TodoAppAdmin",
-  privileges: [
-    { resource: { db: "TodoApp", collection: "" }, actions: ["find", "insert", "update", "remove", "listCollections"] }
-  ],
-  roles: []
-})'
-
 # Create a new MongoDB user and assign it the previously created role
 mongo TodoApp --eval '
 db.createUser({
   user: "admin",
   pwd: "admin",
   roles: [
-    { role: "TodoAppAdmin", db: "TodoApp" },
-    "TodoAppAdmin"
+    { role: "root", db: "admin" }
   ]
 })'
 
-# Update the MongoDB configuration file to allow authorizationes
+# Update the MongoDB configuration file to allow authorizations
 sudo sed -i 's/#security:/security:\n  authorization: enabled/' /etc/mongod.conf 
 
-# Start MongoDB service
+# Restart MongoDB service
 sudo systemctl restart mongod

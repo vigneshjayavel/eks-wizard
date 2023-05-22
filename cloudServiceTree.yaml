@@ -17,7 +17,7 @@ regions:
         eks:
           clusterName: eks-cluster
           version: "1.26"
-          KubernetesApplication: true
+          KubernetesApplication: false
           nodeGroup:
             instanceTypes: t3.small
             scalingConfig:
