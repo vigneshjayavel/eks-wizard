@@ -2,6 +2,7 @@ import { S3Bucket } from '@cdktf/provider-aws/lib/s3-bucket';
 import { S3BucketPublicAccessBlock } from '@cdktf/provider-aws/lib/s3-bucket-public-access-block';
 import { Construct } from 'constructs';
 import { IS3 } from './CloudServiceTreeInterface';
+import { S3BucketPolicy } from '@cdktf/provider-aws/lib/s3-bucket-policy';
 // import { S3BucketPolicy } from '@cdktf/provider-aws/lib/s3-bucket-policy';
 interface S3StackConfig {
   s3: IS3;
@@ -16,21 +17,21 @@ export class S3Stack extends Construct {
       bucket: config.s3.bucketName,
     });
 
-    // new S3BucketPolicy(this, 'BucketPolicy', {
-    //   bucket: s3Bucket.arn,
-    //   policy: JSON.stringify({
-    //     Version: '2012-10-17',
-    //     Statement: [
-    //       {
-    //         Sid: 'PublicReadGetObject',
-    //         Effect: 'Allow',
-    //         Principal: '*',
-    //         Action: 's3:GetObject',
-    //         Resource: `arn:aws:s3:::${s3Bucket.bucket}/*`,
-    //       },
-    //     ],
-    //   }),
-    // });
+    new S3BucketPolicy(this, 'BucketPolicy', {
+      bucket: s3Bucket.arn,
+      policy: JSON.stringify({
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Sid: 'PublicReadGetObject',
+            Effect: 'Allow',
+            Principal: '*',
+            Action: 's3:GetObject',
+            Resource: `arn:aws:s3:::${s3Bucket.bucket}/*`,
+          },
+        ],
+      }),
+    });
 
     new S3BucketPublicAccessBlock(
       this,
