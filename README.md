@@ -1,6 +1,6 @@
 # Unleash the Power of CloudServiceTree for Advanced Cloud Management
 
-This repository harnesses the power of CloudServiceTree, a no-code, highly modular cloud infrastructure management solution. We demonstrate the application of this framework in building a sophisticated three-tier web application on Amazon Web Services (AWS) for the Wiz SE Technical Exercise. 
+This repository unveils the potential of CloudServiceTree, an innovative, no-code, and highly modular cloud infrastructure management framework developed by me. I have applied this framework to construct an advanced three-tier web application on Amazon Web Services (AWS) as a part of the Wiz SE Technical Exercise.
 
 ## Simplifying Cloud Management with CloudServiceTree
 
@@ -111,7 +111,9 @@ Let's dive into the configuration:
 
    - **Security Group**: The security group rules for this instance are specified under `ingress` and `egress`. Ingress rules permit SSH (port 22) and MongoDB (port 27017) connections from any IP (`0.0.0.0/0`). The egress rule allows all outbound traffic. The security group is tagged with `Owner: fdervisi`.
 
-This YAML configuration simplifies the deployment and management of a containerized web application in an EKS cluster, backed by a MongoDB database on an EC2 instance within a well-structured VPC. Its modularity facilitates scaling and adjustment of individual components.
+This YAML configuration simplifies the deployment and management of a containerized web application in an EKS cluster, backed by a MongoDB database on an EC2 instance within a well-structured VPC. Its modularity facilitates scaling and adjustment of individual components. If you want to scale this deployment into a true multi-region deployment, you just have to copy and paste the structure and adjust the parameters to match your desired region.
+
+![eks_app](documentation/Eks-app-multi-region.png)
 
 ## Modularity and Extensibility
 
