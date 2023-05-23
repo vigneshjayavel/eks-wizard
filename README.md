@@ -142,3 +142,11 @@ CloudServiceTree introduces considerable improvements compared to traditional Te
 4. **Integration with GUI**: The no-code approach and clean structure of CloudServiceTree make it an excellent candidate for integration with a graphical user interface (GUI) for infrastructure management. Achieving such integration is not as straightforward with Terraform.
 
 In conclusion, CloudServiceTree offers a user-friendly, scalable, and efficient method for managing cloud infrastructure. The deployment of a robust three-tier web application showcased in this exercise underscores the remarkable advantages and the power of this next-generation approach to cloud management.
+
+
+# Automating Web App Deployment with Helm
+
+In this repository, Helm was used to automate the deployment of the web application. Helm is a package manager for Kubernetes that simplifies the process of managing and deploying applications. You can find more detailed documentation in the [eks-app-chart](./eks-app-char/) directory.
+
+
+
