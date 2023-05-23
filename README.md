@@ -146,7 +146,7 @@ In conclusion, CloudServiceTree offers a user-friendly, scalable, and efficient 
 
 # Automating Web App Deployment with Helm
 
-In this repository, Helm was used to automate the deployment of the web application. Helm is a package manager for Kubernetes that simplifies the process of managing and deploying applications. You can find more detailed documentation in the [eks-app-chart](./eks-app-char/) directory.
+In this repository, Helm was used to automate the deployment of the web application. Helm is a package manager for Kubernetes that simplifies the process of managing and deploying applications. You can find more detailed documentation in the [eks-app-chart](./eks-app-chart/) directory.
 
 
 
