@@ -2,7 +2,7 @@ iamRole:
   mongoDbInstanceRole:
     - assumeRolePolicy: instance_assume_role_policy.json
       iamPolicyTemplateJson:
-        - ec2_all.json
+        - ec2_all.json        
 userId: fdervisi
 regions: 
   - name: eu-south-1
@@ -27,7 +27,7 @@ regions:
         subnets:
           - name: subnet-eks-private1
             public: false
-            cidrBlock: 10.0.1.0/24
+            cidrBlock: 10.0.1.0/24  
             availabilityZone: 0
             eks: true
           - name: subnet-eks-private2
