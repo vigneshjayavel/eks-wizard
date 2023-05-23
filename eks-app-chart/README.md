@@ -21,10 +21,10 @@ The application is made up of:
 
 ## Installing the Chart
 
-To install the chart with the release name `my-release`:
+To install the chart with the release name `eks-app`:
 
 ```bash
-helm install my-release /path/to/eks-app
+helm install eks-app /path/to/eks-app
 ```
 
 This command deploys the `eks-app` on the Kubernetes cluster in the default configuration.
@@ -57,7 +57,7 @@ The following table lists the configurable parameters of the eks-app chart and t
 Modify the values in your Helm command with the `--set key=value[,key=value]` argument. For instance,
 
 ```bash
-helm install my-release /path/to/eks-app --set backend.replicas=2,frontend.replicas=2
+helm install eks-app /path/to/eks-app --set backend.replicas=2,frontend.replicas=2
 ```
 
 This command installs `eks-app` with 2 backend instances and 2 frontend instances.
@@ -66,6 +66,6 @@ For more detailed information about the deployment and configuration, refer to t
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `my-release` deployment:
+To uninstall/delete the `eks-app` deployment:
 
 ```bash

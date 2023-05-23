@@ -3,7 +3,8 @@ import { S3BucketPublicAccessBlock } from '@cdktf/provider-aws/lib/s3-bucket-pub
 import { Construct } from 'constructs';
 import { IS3 } from './CloudServiceTreeInterface';
 import { S3BucketPolicy } from '@cdktf/provider-aws/lib/s3-bucket-policy';
-// import { S3BucketPolicy } from '@cdktf/provider-aws/lib/s3-bucket-policy';
+
+// Import necessary modules and interfaces
 interface S3StackConfig {
   s3: IS3;
   userId: string;
@@ -13,10 +14,12 @@ export class S3Stack extends Construct {
   constructor(scope: Construct, id: string, config: S3StackConfig) {
     super(scope, id);
 
+    // Create an S3 bucket instance
     const s3Bucket = new S3Bucket(this, `s3-bucket-${config.s3.bucketName}`, {
       bucket: config.s3.bucketName,
     });
 
+    // Create an S3 bucket policy
     new S3BucketPolicy(this, 'BucketPolicy', {
       bucket: s3Bucket.arn,
       policy: JSON.stringify({
@@ -33,6 +36,7 @@ export class S3Stack extends Construct {
       }),
     });
 
+    // Configure S3 bucket public access settings
     new S3BucketPublicAccessBlock(
       this,
       `s3-bucket-public-access-block-${config.s3.bucketName}`,
