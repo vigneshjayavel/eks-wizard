@@ -1,20 +1,18 @@
-# Enhanced Cloud Management with CloudServiceTree
+# Unleash the Power of CloudServiceTree for Advanced Cloud Management
 
-CloudServiceTree represents a paradigm shift in cloud infrastructure management, emphasizing a no-code approach and robust modularity. This framework has been used to build an advanced three-tier web application on Amazon Web Services (AWS) as part of the Wiz SE Technical Exercise.
+This repository harnesses the power of CloudServiceTree, a no-code, highly modular cloud infrastructure management solution. We demonstrate the application of this framework in building a sophisticated three-tier web application on Amazon Web Services (AWS) for the Wiz SE Technical Exercise. 
 
-## In-Depth Overview of the Framework and Deployment
+## Simplifying Cloud Management with CloudServiceTree
 
-CloudServiceTree abstracts complex infrastructure code, enabling you to define your cloud environment via simple YAML configuration files. The configuration file in this exercise sets up a rich three-tier web application in AWS, which includes various AWS services like IAM, S3, VPC, EKS, and EC2, along with the deployment of MongoDB on an EC2 instance.
+CloudServiceTree revolutionizes cloud infrastructure management by abstracting complex infrastructure code. This empowers you to define your cloud environment using simple, human-readable YAML configuration files. The focus of this exercise is a robust three-tier web application on AWS, employing various AWS services like IAM, S3, VPC, EKS, and EC2, with MongoDB deployed on an EC2 instance.
 
-![outposts_services](documentation/Eks-app.png)
+![eks_app](documentation/Eks-app.png)
 
+## Understanding CloudServiceTree Configuration
 
-## CloudServiceTree configuration breackdown:
+Below is the breakdown of the YAML configuration file that orchestrates our deployment of a feature-rich cloud environment on AWS:
 
-This YAML configuration file describes the deployment of a cloud environment on AWS, specifying all the components and their settings. Let's break it down:
-
-
-```
+```yaml
 iamRole:
   mongoDbInstanceRole:
     - assumeRolePolicy: instance_assume_role_policy.json
@@ -95,51 +93,52 @@ regions:
             
 ```
 
-1. **IAM Role**: The `iamRole` field specifies the AWS Identity and Access Management (IAM) role for this deployment, named `mongoDbInstanceRole`. The `assumeRolePolicy` and `iamPolicyTemplateJson` subfields refer to JSON policy files (`instance_assume_role_policy.json` and `ec2_all.json` respectively) which define what services and actions the role can assume and perform. This role will be associated with the MongoDB EC2 instance, allowing it to perform necessary operations.
+Let's dive into the configuration:
 
-2. **User ID**: The `userId` field indicates the user or account that this configuration is associated with. In this case, the user is `fdervisi`.
+1. **IAM Role**: The IAM role `mongoDbInstanceRole` is defined with policies from the `instance_assume_role_policy.json` and `ec2_all.json` files. This role is associated with our MongoDB EC2 instance for appropriate access rights.
 
-3. **Regions**: This section contains the configuration for the AWS region `eu-south-1`. 
+2. **User ID**: The `userId` `fdervisi` is the associated user for this configuration.
 
-   - `lamdaS3Bucket`: It specifies the S3 bucket `fdervisi-repro-bucket` to be used for AWS Lambda function storage.
-   
-   - `s3`: This defines another S3 bucket, `fdervisi-mongodb-backup`, to store MongoDB backups. `blockPublicAccess` is set to `false`, making the bucket publicly readable.
-   
-4. **VPC**: The `vpc` field describes the virtual private cloud (VPC) settings. A VPC named `vpc-eks-app` is created with a CIDR block of `10.0.0.0/20`. It has a private DNS zone (`fdervisi.io`).
+3. **Regions**: The configuration specifies `eu-south-1` as the AWS region. The `lamdaS3Bucket` `fdervisi-repro-bucket` is dedicated for AWS Lambda function storage, while the `s3` field creates the `fdervisi-mongodb-backup` bucket for MongoDB backups. The `blockPublicAccess` set to `false` allows public read access to the bucket.
 
-   - **EKS**: Within the VPC, an Amazon Elastic Kubernetes Service (EKS) cluster named `eks-cluster` is set up. It uses version "1.26" of EKS. A node group is configured to use `t3.small` instances, with a scaling configuration of 1-5 instances, desiring 3 instances at a time.
-   
-   - **Subnets**: Four subnets are defined within the VPC. Three private subnets are dedicated for the EKS cluster (`subnet-eks-private1`, `subnet-eks-private2`, `subnet-eks-private3`). A public subnet, `subnet-mongoDB`, is set up for the MongoDB instance. 
+4. **VPC**: The `vpc` field outlines a VPC named `vpc-eks-app` with a CIDR block of `10.0.0.0/20` and a private DNS zone (`fdervisi.io`).
 
-5. **MongoDB Instance**: An EC2 instance is created in the public subnet for MongoDB. This instance is of type `t3.micro`, uses the specified Amazon Machine Image (AMI), and is associated with the previously defined IAM role `mongoDbInstanceRole`. The instance is publicly accessible and has an Elastic IP (EIP). User data (`userdata.sh`) and a key pair (`Key_MBP_fdervisi`) are also defined for this instance.
+   - **EKS**: Within the VPC, an EKS cluster named `eks-cluster` is created. The node group configuration specifies `t3.small` instances with a scaling configuration of 1-5 instances, aiming for 3 instances at any given time.
 
-   - **Security Group**: The security group associated with the instance specifies the rules for inbound (`ingress`) and outbound (`egress`) traffic. Ingress rules allow SSH (port 22) and MongoDB (port 27017) connections from any IP address (`0.0.0.0/0`). The egress rule allows all outbound traffic. A tag of `Owner: fdervisi` is added to the security group.
+   - **Subnets**: Four subnets are configured within the VPC: three private subnets for the EKS cluster (`subnet-eks-private1`, `subnet-eks-private2`, `subnet-eks-private3`) and a public subnet (`subnet-mongoDB`) for the MongoDB instance.
 
-This configuration enables the deployment of a containerized web application in an EKS cluster, supported by a MongoDB database on an EC2 instance, all within a well-defined VPC. The use of modular definitions simplifies cloud management, allowing easy adjustment of individual components and facilitating the scaling of the deployment across regions. This also makes it a suitable backend for a GUI, which can simplify user interaction with the infrastructure management.
+5. **MongoDB Instance**: An EC2 instance named `instance-mongoDb` is established in the `subnet-mongoDB` for MongoDB. This `t3.micro` instance uses the defined AMI and IAM role (`mongoDbInstanceRole`). The instance is publicly accessible and has an Elastic IP (EIP).
 
+   - **Security Group**: The security group rules for this instance are specified under `ingress` and `egress`. Ingress rules permit SSH (port 22) and MongoDB (port 27017) connections from any IP (`0.0.0.0/0`). The egress rule allows all outbound traffic. The security group is tagged with `Owner: fdervisi`.
 
-### Extensibility & Modularity
+This YAML configuration simplifies the deployment and management of a containerized web application in an EKS cluster, backed by a MongoDB database on an EC2 instance within a well-structured VPC. Its modularity facilitates scaling and adjustment of individual components.
 
-The modular design of CloudServiceTree makes it easy to manage individual services without needing to understand the entire infrastructure. This modular setup also aids in maintaining the codebase as services can be independently updated, scaled, or modified without disrupting the whole infrastructure. 
+## Modularity and Extensibility
 
-Each YAML configuration file is an independent module, contributing to a particular aspect of the infrastructure, whether it be setting up an IAM role, defining a VPC, or deploying an EKS cluster. For instance, if you need to scale your deployment across multiple regions, you can simply replicate the desired modules in your new region-specific configuration file. This extensibility enables your infrastructure to grow with your needs without demanding additional scripting or manual work.
+CloudServiceTree's modular design makes it easy to manage individual services, allowing for independent updating, scaling, or modifying without disrupting the entire infrastructure. Each YAML configuration file operates as an independent module, contributing to a specific part of the infrastructure, whether it's setting up an IAM role, defining a VPC, or deploying an EKS cluster. This flexibility facilitates infrastructure growth without requiring additional scripting or manual work.
 
-### Backend for GUI
+## GUI Backend Support
 
-CloudServiceTree's approach makes it a suitable backend for a graphical user interface (GUI). By simply interacting with the GUI, users can modify the YAML configuration files to alter the infrastructure without needing to write or understand code. This not only brings convenience to the users but also enhances efficiency, particularly when scaling or adjusting the cloud environment to meet evolving requirements.
+CloudServiceTree's approach makes it a suitable backend for a graphical user interface (GUI). By simply interacting with the GUI, users can modify the Topology to alter the infrastructure without needing to write or understand code. This not only brings convenience to the users but also enhances efficiency, particularly when scaling or adjusting the cloud environment to meet evolving requirements.
 
-## Value Proposition Over Traditional Terraform Deployment
+# Enhanced Infrastructure Management with CloudServiceTree
 
-Compared to traditional infrastructure management using Terraform, CloudServiceTree offers several distinct advantages:
+CloudServiceTree leverages the Cloud Development Kit for Terraform (CDKTF), which empowers you to use familiar programming languages for defining and provisioning your infrastructure. With this tool, you gain access to the extensive Terraform ecosystem without needing to master HashiCorp Configuration Language (HCL), and you can benefit from the strength of your existing toolchain for testing, dependency management, and more. We support TypeScript, Python, Java, C#, and Go.
 
-1. **No-Code Deployment**: While Terraform requires understanding and writing of HashiCorp Language (HCL), CloudServiceTree abstracts away the coding aspect. The YAML configuration files are human-readable and easy to manage without in-depth coding knowledge.
+![terraform_cdk](documentation/Terraform CDK.png)
 
-2. **Modular Architecture**: Although Terraform supports modularity, the real benefit of CloudServiceTree is its high-level, service-based modularity. This results in less code, clearer structure, and easier maintainability.
+After integrating your services into the CloudServiceTree framework, you'll be able to fully appreciate its benefits. Notably, this framework contrasts the traditional Terraform approach. Following the integration, the abstraction into a CloudServiceTree offers the following advantages:
 
-3. **Streamlined Management**: Terraform requires separate state management and potential complexities arising from state file discrepancies. CloudServiceTree, in contrast, reduces the management overhead by handling state internally and transparently.
+## Advantages over Traditional Terraform Deployment
 
-4. **Scalability**: With CloudServiceTree, scaling across multiple regions or adding new services is as simple as adding or duplicating configuration modules. In contrast, Terraform would require you to write additional code.
+CloudServiceTree introduces considerable improvements compared to traditional Terraform deployments:
 
-5. **Integration with GUI**: Due to its no-code approach and clear structure, CloudServiceTree is well-suited to integration with a GUI for infrastructure management. This is not as straightforward with Terraform.
+1. **No-Code Deployment**: CloudServiceTree makes use of human-readable YAML configuration files, eliminating the need to understand and write in Terraform's HashiCorp Configuration Language (HCL).
 
-In conclusion, CloudServiceTree provides an accessible, scalable, and efficient way to manage cloud infrastructure. This exercise showcases the deployment of a complex three-tier web application using this advanced framework, underscoring the value and power of this next-generation approach to cloud management.
+2. **Modular Architecture**: CloudServiceTree's high-level, service-based modularity results in less code, a clearer structure, and enhanced maintainability. This presents a notable advantage over the module-based architecture in Terraform.
+
+3. **Scalability**: Scaling across multiple regions or incorporating new services with CloudServiceTree is simplified to just adding or duplicating configuration modules. In contrast, Terraform requires writing additional code for such tasks.
+
+4. **Integration with GUI**: The no-code approach and clean structure of CloudServiceTree make it an excellent candidate for integration with a graphical user interface (GUI) for infrastructure management. Achieving such integration is not as straightforward with Terraform.
+
+In conclusion, CloudServiceTree offers a user-friendly, scalable, and efficient method for managing cloud infrastructure. The deployment of a robust three-tier web application showcased in this exercise underscores the remarkable advantages and the power of this next-generation approach to cloud management.
