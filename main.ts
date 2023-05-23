@@ -65,12 +65,6 @@ if (cloudServiceTree.iamRole) {
     iamRole: cloudServiceTree.iamRole,
     userId: cloudServiceTree.userId,
   });
-  // // Define a Cloud Backend for the IAM stack with a named workspace
-  // new CloudBackend(iamStack, {
-  //   hostname: 'app.terraform.io',
-  //   organization: 'fdervisi',
-  //   workspaces: new NamedCloudWorkspace(`eks-app-iam-stack`),
-  // });
 }
 
 // For each region defined in the cloud service tree, create a RegionStack
