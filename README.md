@@ -121,15 +121,13 @@ CloudServiceTree's modular design makes it easy to manage individual services, a
 
 CloudServiceTree's approach makes it a suitable backend for a graphical user interface (GUI). By simply interacting with the GUI, users can modify the Topology to alter the infrastructure without needing to write or understand code. This not only brings convenience to the users but also enhances efficiency, particularly when scaling or adjusting the cloud environment to meet evolving requirements.
 
-# Enhanced Infrastructure Management with CloudServiceTree
+# Advantages over Traditional Terraform Deployment
 
 CloudServiceTree leverages the Cloud Development Kit for Terraform (CDKTF), which empowers you to use familiar programming languages for defining and provisioning your infrastructure. With this tool, you gain access to the extensive Terraform ecosystem without needing to master HashiCorp Configuration Language (HCL), and you can benefit from the strength of your existing toolchain for testing, dependency management, and more. We support TypeScript, Python, Java, C#, and Go.
 
-![terraform_cdk](documentation/Terraform CDK.png)
+![terraform_cdk](documentation/terrafrom-cdk.png)
 
 After integrating your services into the CloudServiceTree framework, you'll be able to fully appreciate its benefits. Notably, this framework contrasts the traditional Terraform approach. Following the integration, the abstraction into a CloudServiceTree offers the following advantages:
-
-## Advantages over Traditional Terraform Deployment
 
 CloudServiceTree introduces considerable improvements compared to traditional Terraform deployments:
 
