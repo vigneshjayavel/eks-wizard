@@ -13,7 +13,7 @@ CloudServiceTree revolutionizes cloud infrastructure management by abstracting c
 Below is the breakdown of the YAML configuration file that orchestrates our deployment of a feature-rich cloud environment on AWS:
 
 ```yaml
-iamRole:
+iamRole: 
   mongoDbInstanceRole:
     - assumeRolePolicy: instance_assume_role_policy.json
       iamPolicyTemplateJson:
