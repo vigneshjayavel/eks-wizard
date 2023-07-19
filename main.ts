@@ -1,3 +1,11 @@
+/**
+ * This file defines the main entry point for the EKS application.
+ * It imports necessary libraries and constructs, and creates a CDKTF app.
+ * It defines a RegionStack class that creates a VPC and Lambda stack for each VPC item in a region.
+ * It also creates an S3 stack if the region has an S3 service, and an IAM stack if an IAM role is defined in the cloud service tree.
+ * Finally, it synthesizes the app to produce the Terraform JSON.
+ * @packageDocumentation
+ */
 // Import necessary libraries
 import { Construct } from 'constructs';
 import { App, TerraformStack, CloudBackend, NamedCloudWorkspace } from 'cdktf';
