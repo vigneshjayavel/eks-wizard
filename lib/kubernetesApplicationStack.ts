@@ -15,7 +15,14 @@ interface KubernetesApplicationStackConfig {
   userId: string;
 }
 
-// Define a class for Kubernetes Application Stack
+/**
+ * A class representing a Kubernetes Application Stack.
+ * @class
+ * @constructor
+ * @param {Construct} scope - The parent Construct instantiating this stack.
+ * @param {string} id - The unique identifier for this stack.
+ * @param {KubernetesApplicationStackConfig} config - The configuration object for this stack.
+ */
 export class KubernetesApplicationStack extends Construct {
   constructor(
     scope: Construct,

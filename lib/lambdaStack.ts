@@ -14,7 +14,9 @@ interface LambdaStackConfig {
   lamdaS3Bucket: string;
 }
 
-// This class sets up the resources for a lambda function using AWS CDK
+/**
+ * This class sets up the resources for a lambda function using AWS CDK
+ */
 export class LambdaStack extends Construct {
   constructor(scope: Construct, id: string, config: LambdaStackConfig) {
     super(scope, id);

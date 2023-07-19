@@ -1,3 +1,20 @@
+/**
+ * PrivateDnsZoneStackConfig defines the interface for the stack configuration.
+ * @interface
+ * @property {Array<{ip?: string; hostname?: string}>} privateDns - List of private DNS records.
+ * @property {string} vpcId - The ID of the VPC where the private DNS zone should be created.
+ * @property {string} userId - The ID of the user.
+ * @property {string} zoneDomainName - The domain name for the DNS zone.
+ */
+
+/**
+ * PrivateDnsZoneStack creates a private DNS zone in Route53.
+ * @class
+ * @extends Construct
+ * @param {Construct} scope - The parent construct.
+ * @param {string} id - The ID of the construct.
+ * @param {PrivateDnsZoneStackConfig} config - The configuration for the stack.
+ */
 // Import necessary AWS components from the AWS Construct Library
 import { Route53Record } from '@cdktf/provider-aws/lib/route53-record';
 import { Route53Zone } from '@cdktf/provider-aws/lib/route53-zone';

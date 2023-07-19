@@ -14,7 +14,9 @@ interface InstanceStackConfig {
   subnetId: string;
 }
 
-// Define a class for Instance Stack
+/**
+ * A class representing an instance stack.
+ */
 export class InstanceStack extends Construct {
   // Declare class variables
   private securityGroup: SecurityGroup;
@@ -26,7 +28,12 @@ export class InstanceStack extends Construct {
     hostname: '',
   };
 
-  // Constructor for Instance Stack
+  /**
+   * Constructor for Instance Stack.
+   * @param scope The parent construct creating this instance.
+   * @param id The ID of the instance stack.
+   * @param config The configuration for the instance stack.
+   */
   constructor(scope: Construct, id: string, config: InstanceStackConfig) {
     // Call the parent class's constructor
     super(scope, id);

@@ -1,3 +1,8 @@
+/**
+ * Parses the cloudServiceTree.yaml file and validates it against the cloudServiceTreeSchema.json file.
+ * @returns {ICloudServiceTree} The parsed cloud service tree object.
+ * @throws {Error} If the cloudServiceTree object is invalid against the schema.
+ */
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import Ajv from 'ajv';

@@ -21,6 +21,12 @@ interface EksStackConfig {
 export class EksStack extends Construct {
   public eks: dataAwsEksCluster.DataAwsEksCluster;
   public eksAuth: dataAwsEksClusterAuth.DataAwsEksClusterAuth;
+/**
+ * EksStack class creates an Amazon Elastic Kubernetes Service (EKS) cluster and node group with the provided configurations.
+ * @param scope - The parent Construct instantiating this class.
+ * @param id - The unique identifier for this class instance within the parent Construct.
+ * @param config - The configurations for the EKS cluster and node group.
+ */
 
   constructor(scope: Construct, id: string, config: EksStackConfig) {
     super(scope, id);

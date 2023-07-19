@@ -15,7 +15,9 @@ interface IamStackConfig {
   userId: string;
 }
 
-// A class to create IAM roles, policies, and instance profiles.
+/**
+ * A class to create IAM roles, policies, and instance profiles.
+ */
 export class IamStack extends TerraformStack {
   constructor(scope: Construct, id: string, config: IamStackConfig) {
     super(scope, id);

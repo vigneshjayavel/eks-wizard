@@ -1,3 +1,13 @@
+/**
+ * S3Stack class creates an S3 bucket instance, an S3 bucket policy, and configures S3 bucket public access settings.
+ * @class
+ * @constructor
+ * @param {Construct} scope - The parent Construct instantiating this S3Stack.
+ * @param {string} id - The unique identifier for this S3Stack.
+ * @param {S3StackConfig} config - The configuration object for this S3Stack.
+ * @param {IS3} config.s3 - The S3 configuration object.
+ * @param {string} config.userId - The user ID.
+ */
 import { S3Bucket } from '@cdktf/provider-aws/lib/s3-bucket';
 import { S3BucketPublicAccessBlock } from '@cdktf/provider-aws/lib/s3-bucket-public-access-block';
 import { Construct } from 'constructs';
