@@ -1,6 +1,6 @@
 # Unleash the Power of CloudServiceTree for Advanced Cloud Management
 
-This repository unveils the potential of CloudServiceTree, an innovative, no-code, and highly modular cloud infrastructure management framework developed by me. I have applied this framework to construct an advanced three-tier web application on Amazon Web Services (AWS) as a part of the Wiz SE Technical Exercise.
+This repository unveils the potential of CloudServiceTree, an innovative, no-code, and highly modular cloud infrastructure management framework developed by me. I have applied this framework to construct an advanced three-tier web application on Amazon Web Services (AWS) as a part of a Technical Exercise.
 
 ## Simplifying Cloud Management with CloudServiceTree
 
